@@ -18,8 +18,8 @@ Do not hesitate to open an issue to bring up any bugs/errors and if you have any
 Please contribute to any features that will enhance the user experience.
 
 ## Images
-![BaseImage](https://github.com/Bl3nd/ByteView/assets/6558800/b2867352-8602-4384-b539-f402857c5883)
+![BaseImage](https://github.com/Bl3nd/ByteView/assets/6558800/cc8949ff-c641-4203-a879-87eba86e8bf6)
 
-https://github.com/Bl3nd/ByteView/assets/6558800/4ab99e8c-fc5e-4d2f-998c-616dfd05cb9a
+https://github.com/Bl3nd/ByteView/assets/6558800/add895f9-99af-48e2-a8be-2116dfc29e0c
 
-https://github.com/Bl3nd/ByteView/assets/6558800/51efd30d-b006-4621-8eda-8ee4accf50e4
+https://github.com/Bl3nd/ByteView/assets/6558800/f0e7fd8f-7daf-4178-b8ba-7a4e60f2749a
