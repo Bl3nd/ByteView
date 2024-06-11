@@ -67,9 +67,9 @@ public class ClassResourcePage extends Page {
 			}
 		});
 
-		ErrorStrip errorStrip = new ErrorStrip(textArea);
-		errorStrip.setShowMarkedOccurrences(true);
-		add(errorStrip, BorderLayout.LINE_END);
+//		ErrorStrip errorStrip = new ErrorStrip(textArea);
+//		errorStrip.setShowMarkedOccurrences(true);
+//		add(errorStrip, BorderLayout.LINE_END);
 
 		textArea.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_B, InputEvent.CTRL_DOWN_MASK), "goToAction");
 		textArea.getActionMap().put("goToAction", new AbstractAction() {
