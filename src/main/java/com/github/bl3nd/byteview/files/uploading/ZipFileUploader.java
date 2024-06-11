@@ -1,0 +1,109 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2024 Cody March
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
+package com.github.bl3nd.byteview.files.uploading;
+
+import com.github.bl3nd.byteview.ByteView;
+import com.github.bl3nd.byteview.files.ClassFileContainer;
+import com.github.bl3nd.byteview.files.FileContainer;
+import com.github.bl3nd.byteview.files.ZipFileContainer;
+import com.github.bl3nd.byteview.gui.components.MyTreeNode;
+import com.github.bl3nd.byteview.misc.Constants;
+import com.github.bl3nd.byteview.misc.FileMisc;
+import org.jetbrains.annotations.NotNull;
+
+import javax.swing.*;
+import java.io.*;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+
+/**
+ * Created by Bl3nd.
+ * Date: 6/1/2024
+ */
+public class ZipFileUploader implements FileUploader {
+	private final File file;
+
+	public ZipFileUploader(final File file) {
+		this.file = file;
+	}
+
+	@Override
+	public void upload() throws IOException {
+		if (!ByteView.mainFrame.resourcePane.files.contains(file)) {
+			ZipFileContainer container = new ZipFileContainer(file);
+			try (ZipInputStream zis = new ZipInputStream(new FileInputStream(file))) {
+				ZipEntry entry;
+				while ((entry = zis.getNextEntry()) != null) {
+					if (entry.isDirectory()) {
+						continue;
+					}
+
+
+					String entryName = entry.getName();
+					if (entryName.endsWith(".class")) {
+						StringBuilder directory = new StringBuilder();
+						directory.append(Constants.TEMP_LOCATION).append(File.separator);
+						byte[] bytes = getBytes(zis);
+						String[] split = entryName.split("/");
+						String fileName = split[split.length - 1];
+						for (String s : split) {
+							directory.append(s);
+						}
+
+						ClassFileContainer classFileContainer = new ClassFileContainer(bytes, fileName);
+						classFileContainer.rootNode = new MyTreeNode(directory);
+						container.fileEntries.put(FileMisc.removeExtension(entryName), classFileContainer);
+					} else if (entryName.endsWith(".MF")) {
+						byte[] bytes = getBytes(zis);
+						String[] split = entryName.split("/");
+						FileContainer fileContainer = new FileContainer(bytes, split[1]);
+						fileContainer.rootNode = new MyTreeNode(split[0]);
+						container.fileEntries.put(FileMisc.removeExtension(entryName), fileContainer);
+					}
+
+					zis.closeEntry();
+				}
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
+
+			ByteView.mainFrame.resourcePane.files.add(file);
+
+			SwingUtilities.invokeLater(() -> ByteView.mainFrame.resourcePane.addResource(container));
+		}
+	}
+
+	private byte @NotNull [] getBytes(final @NotNull InputStream is) throws IOException {
+		try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+			byte[] buffer = new byte[1024];
+			int len;
+			while ((len = is.read(buffer)) != -1) {
+				baos.write(buffer, 0, len);
+			}
+
+			return baos.toByteArray();
+		}
+	}
+}
