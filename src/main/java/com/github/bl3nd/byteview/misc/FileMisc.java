@@ -63,4 +63,16 @@ public class FileMisc {
 			return InterpreterUtil.readBytes(fis, (int) file.length());
 		}
 	}
+
+	public static byte @NotNull [] readBytes(@NotNull InputStream is) throws IOException {
+		try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+			byte[] buffer = new byte[1024];
+			int len;
+			while ((len = is.read(buffer)) != -1) {
+				baos.write(buffer, 0, len);
+			}
+
+			return baos.toByteArray();
+		}
+	}
 }

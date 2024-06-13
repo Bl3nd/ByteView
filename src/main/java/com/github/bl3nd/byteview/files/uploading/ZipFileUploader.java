@@ -31,10 +31,11 @@ import com.github.bl3nd.byteview.files.ZipFileContainer;
 import com.github.bl3nd.byteview.gui.components.MyTreeNode;
 import com.github.bl3nd.byteview.misc.Constants;
 import com.github.bl3nd.byteview.misc.FileMisc;
-import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -65,7 +66,7 @@ public class ZipFileUploader implements FileUploader {
 					if (entryName.endsWith(".class")) {
 						StringBuilder directory = new StringBuilder();
 						directory.append(Constants.TEMP_LOCATION).append(File.separator);
-						byte[] bytes = getBytes(zis);
+						byte[] bytes = FileMisc.readBytes(zis);
 						String[] split = entryName.split("/");
 						String fileName = split[split.length - 1];
 						for (String s : split) {
@@ -76,7 +77,7 @@ public class ZipFileUploader implements FileUploader {
 						classFileContainer.rootNode = new MyTreeNode(directory);
 						container.fileEntries.put(FileMisc.removeExtension(entryName), classFileContainer);
 					} else if (entryName.endsWith(".MF")) {
-						byte[] bytes = getBytes(zis);
+						byte[] bytes = FileMisc.readBytes(zis);
 						String[] split = entryName.split("/");
 						FileContainer fileContainer = new FileContainer(bytes, split[1]);
 						fileContainer.rootNode = new MyTreeNode(split[0]);
@@ -92,18 +93,6 @@ public class ZipFileUploader implements FileUploader {
 			ByteView.mainFrame.resourcePane.files.add(file);
 
 			SwingUtilities.invokeLater(() -> ByteView.mainFrame.resourcePane.addResource(container));
-		}
-	}
-
-	private byte @NotNull [] getBytes(final @NotNull InputStream is) throws IOException {
-		try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
-			byte[] buffer = new byte[1024];
-			int len;
-			while ((len = is.read(buffer)) != -1) {
-				baos.write(buffer, 0, len);
-			}
-
-			return baos.toByteArray();
 		}
 	}
 }

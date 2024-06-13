@@ -35,7 +35,6 @@ import com.github.bl3nd.byteview.gui.resourceviewer.pages.ClassResourcePage;
 import com.github.bl3nd.byteview.gui.resourceviewer.pages.Page;
 import com.github.bl3nd.byteview.gui.structure.components.FileStructureTreeCellRenderer;
 import com.github.bl3nd.byteview.misc.ClassMemberLocation;
-import org.fife.ui.rsyntaxtextarea.RSyntaxTextAreaHighlighter;
 import org.fife.ui.rtextarea.SmartHighlightPainter;
 import org.jetbrains.annotations.NotNull;
 

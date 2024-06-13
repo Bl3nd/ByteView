@@ -26,10 +26,14 @@ package com.github.bl3nd.byteview.gui.resourceviewer.pages;
 
 import com.github.bl3nd.byteview.ByteView;
 import com.github.bl3nd.byteview.files.ClassFileContainer;
+import com.github.bl3nd.byteview.gui.components.MyErrorStripe;
 import com.github.bl3nd.byteview.gui.resourceviewer.component.RSyntaxTextAreaHighlighterEx;
 import com.github.bl3nd.byteview.misc.ClassMemberLocation;
-import org.fife.ui.rsyntaxtextarea.*;
-import org.fife.ui.rtextarea.*;
+import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
+import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
+import org.fife.ui.rsyntaxtextarea.Token;
+import org.fife.ui.rtextarea.RTextScrollPane;
+import org.fife.ui.rtextarea.SmartHighlightPainter;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -44,6 +48,8 @@ import java.util.Objects;
  * Date: 5/30/2024
  */
 public class ClassResourcePage extends Page {
+	private final MyErrorStripe errorStripe;
+
 	public ClassResourcePage(@NotNull ClassFileContainer classFileContainer) {
 		super(classFileContainer);
 
@@ -54,6 +60,7 @@ public class ClassResourcePage extends Page {
 		textArea.setEditable(false);
 		textArea.setCursor(new Cursor(Cursor.TEXT_CURSOR));
 		textArea.setHighlighter(new RSyntaxTextAreaHighlighterEx());
+		textArea.setMarkOccurrencesColor(Color.ORANGE);
 		textArea.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
@@ -61,6 +68,9 @@ public class ClassResourcePage extends Page {
 				if (ByteView.mainFrame.fileStructurePane.getOpenedContainer() == null) {
 					ByteView.mainFrame.fileStructurePane.showContainerStructure(classFileContainer);
 				}
+
+				RSyntaxTextAreaHighlighterEx highlighterEx = (RSyntaxTextAreaHighlighterEx) textArea.getHighlighter();
+				highlighterEx.clearMarkOccurrencesHighlights();
 
 				RSyntaxTextArea textArea = (RSyntaxTextArea) e.getSource();
 				markOccurrences(textArea, classFileContainer);
@@ -70,6 +80,9 @@ public class ClassResourcePage extends Page {
 //		ErrorStrip errorStrip = new ErrorStrip(textArea);
 //		errorStrip.setShowMarkedOccurrences(true);
 //		add(errorStrip, BorderLayout.LINE_END);
+
+		errorStripe = new MyErrorStripe(textArea);
+		add(errorStripe, BorderLayout.LINE_END);
 
 		textArea.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_B, InputEvent.CTRL_DOWN_MASK), "goToAction");
 		textArea.getActionMap().put("goToAction", new AbstractAction() {
@@ -157,18 +170,22 @@ public class ClassResourcePage extends Page {
 
 	public void markOccurrences(@NotNull RSyntaxTextArea textArea,
 										@NotNull ClassFileContainer classFileContainer) {
+		RSyntaxTextAreaHighlighterEx highlighterEx = (RSyntaxTextAreaHighlighterEx) textArea.getHighlighter();
 		Token token = textArea.modelToToken(textArea.getCaretPosition() - 1);
 		if (token == null || token.getLexeme().equals(";")) {
+			highlighterEx.clearMarkOccurrencesHighlights();
+			errorStripe.refreshMarkers();
 			return;
 		}
 
 		token = Objects.equals(token.getLexeme(), " ") || Objects.equals(token.getLexeme(), ".") ?
 				textArea.modelToToken(textArea.getCaretPosition() + 1) : token;
 		if (token == null) {
+			highlighterEx.clearMarkOccurrencesHighlights();
+			errorStripe.refreshMarkers();
 			return;
 		}
 
-		RSyntaxTextAreaHighlighterEx highlighterEx = (RSyntaxTextAreaHighlighterEx) textArea.getHighlighter();
 
 		highlighterEx.clearMarkOccurrencesHighlights();
 
@@ -273,5 +290,7 @@ public class ClassResourcePage extends Page {
 				}
 			}
 		}));
+
+		errorStripe.refreshMarkers();
 	}
 }

@@ -22,9 +22,10 @@
  * SOFTWARE.
  */
 
-package com.github.bl3nd.byteview.decompiler;
+package com.github.bl3nd.byteview.decompiler.impl;
 
 import com.github.bl3nd.byteview.ByteView;
+import com.github.bl3nd.byteview.decompiler.Decompiler;
 import com.github.bl3nd.byteview.files.ClassFileContainer;
 import com.github.bl3nd.byteview.files.FileContainer;
 import com.github.bl3nd.byteview.misc.ClassMemberLocation;
@@ -56,8 +57,6 @@ public class VineFlowerDecompiler extends Decompiler {
 			return null;
 		}
 
-		ByteView.configuration.getRecentUploadedDirectory();
-
 		final File tempFile = new File(TEMP_LOCATION + File.separator + fileName);
 		if (!tempFile.exists()) {
 			try {
@@ -70,14 +69,18 @@ public class VineFlowerDecompiler extends Decompiler {
 		try (FileOutputStream out = new FileOutputStream(tempFile)) {
 			out.write(bytes);
 		} catch (IOException e) {
-			e.printStackTrace();
+			throw new RuntimeException("Failed to write bytes to temp file! " + e);
 		}
 
+		String exception = "";
 		try {
 			ConsoleDecompiler.main(generateMainMethod(tempFile.getAbsolutePath(),
 					new File(TEMP_LOCATION).getAbsolutePath()));
 		} catch (Throwable t) {
-			throw new RuntimeException(t);
+			StringWriter sw = new StringWriter();
+			t.printStackTrace(new PrintWriter(sw));
+			t.printStackTrace();
+			exception = t.getMessage();
 		}
 
 		tempFile.delete();
@@ -91,6 +94,7 @@ public class VineFlowerDecompiler extends Decompiler {
 			} catch (IOException e) {
 				throw new RuntimeException(e);
 			}
+
 			output.delete();
 			int index = content.indexOf("Tokens:") - 3;
 			String tokenString = content.substring(index);
@@ -102,7 +106,7 @@ public class VineFlowerDecompiler extends Decompiler {
 			return content;
 		}
 
-		return "blah blah blah";
+		return exception;
 	}
 
 	private HashMap<String, ArrayList<ClassMemberLocation>> locations = new HashMap<>();

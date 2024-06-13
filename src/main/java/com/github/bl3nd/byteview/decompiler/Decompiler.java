@@ -24,6 +24,7 @@
 
 package com.github.bl3nd.byteview.decompiler;
 
+import com.github.bl3nd.byteview.decompiler.impl.VineFlowerDecompiler;
 import com.github.bl3nd.byteview.files.FileContainer;
 
 /**

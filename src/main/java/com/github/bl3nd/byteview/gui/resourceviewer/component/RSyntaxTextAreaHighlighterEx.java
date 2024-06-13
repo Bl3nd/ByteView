@@ -23,6 +23,7 @@
 
 package com.github.bl3nd.byteview.gui.resourceviewer.component;
 
+import org.fife.ui.rsyntaxtextarea.DocumentRange;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextAreaHighlighter;
 import org.fife.ui.rsyntaxtextarea.parser.ParserNotice;
 import org.fife.ui.rtextarea.SmartHighlightPainter;
@@ -58,6 +59,24 @@ public class RSyntaxTextAreaHighlighterEx extends RSyntaxTextAreaHighlighter {
 		markedOccurrences.add(i);
 		mapper.damageRange(textArea, start, end);
 		return i;
+	}
+
+	@Override
+	public List<DocumentRange> getMarkedOccurrences() {
+		List<DocumentRange> list = new ArrayList<>(markedOccurrences.size());
+		for (HighlightInfo info : markedOccurrences) {
+			int start = info.getStartOffset();
+			int end = info.getEndOffset() + 1; // HACK
+			if (start <= end) {
+				// Occasionally a Marked Occurrence can have a lost end offset
+				// but not start offset (replacing entire text content with
+				// new content, and a marked occurrence is on the last token
+				// in the document).
+				DocumentRange range = new DocumentRange(start, end);
+				list.add(range);
+			}
+		}
+		return list;
 	}
 
 	public void clearMarkOccurrencesHighlights() {
