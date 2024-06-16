@@ -31,5 +31,10 @@ import java.io.IOException;
  * Date: 5/21/2024
  */
 public interface FileUploader {
+	/**
+	 * Upload a file into a container.
+	 *
+	 * @throws IOException when an exception occurs
+	 */
 	void upload() throws IOException;
 }

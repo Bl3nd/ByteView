@@ -61,7 +61,6 @@ public class ZipFileUploader implements FileUploader {
 						continue;
 					}
 
-
 					String entryName = entry.getName();
 					if (entryName.endsWith(".class")) {
 						StringBuilder directory = new StringBuilder();

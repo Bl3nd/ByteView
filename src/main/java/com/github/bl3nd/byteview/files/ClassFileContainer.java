@@ -24,7 +24,10 @@
 
 package com.github.bl3nd.byteview.files;
 
-import com.github.bl3nd.byteview.misc.ClassMemberLocation;
+import com.github.bl3nd.byteview.location.ClassFieldLocation;
+import com.github.bl3nd.byteview.location.ClassLocalVariableLocation;
+import com.github.bl3nd.byteview.location.ClassMethodLocation;
+import com.github.bl3nd.byteview.location.ClassParameterLocation;
 import com.github.bl3nd.byteview.misc.FileMisc;
 import com.github.bl3nd.byteview.misc.Icons;
 import com.github.javaparser.JavaParser;
@@ -42,15 +45,17 @@ import java.io.IOException;
 import java.util.*;
 
 /**
+ * A container for .class files
+ * <p>
  * Created by Bl3nd.
  * Date: 5/20/2024
  */
 public class ClassFileContainer extends FileContainer {
 	public boolean hasBeenDecompiled = false;
-	public transient NavigableMap<String, ArrayList<ClassMemberLocation>> fieldMembers = new TreeMap<>();
-	public transient NavigableMap<String, ArrayList<ClassMemberLocation>> methodParameterMembers = new TreeMap<>();
-	public transient NavigableMap<String, ArrayList<ClassMemberLocation>> methodLocalMembers = new TreeMap<>();
-	public transient NavigableMap<String, ArrayList<ClassMemberLocation>> methodMembers = new TreeMap<>();
+	public transient NavigableMap<String, ArrayList<ClassFieldLocation>> fieldMembers = new TreeMap<>();
+	public transient NavigableMap<String, ArrayList<ClassParameterLocation>> methodParameterMembers = new TreeMap<>();
+	public transient NavigableMap<String, ArrayList<ClassLocalVariableLocation>> methodLocalMembers = new TreeMap<>();
+	public transient NavigableMap<String, ArrayList<ClassMethodLocation>> methodMembers = new TreeMap<>();
 	private String content;
 
 	public ClassFileContainer(final File file) throws IOException {
@@ -61,17 +66,15 @@ public class ClassFileContainer extends FileContainer {
 		super(bytes, fileName);
 	}
 
-	public boolean hasBeenDecompiled() {
-		return hasBeenDecompiled;
-	}
-
-	public void setHasBeenDecompiled(boolean hasBeenDecompiled) {
-		this.hasBeenDecompiled = hasBeenDecompiled;
-	}
-
+	/**
+	 * Parse the Java content using JavaParser. This let us use the parsed Java in the structure pane.
+	 *
+	 * @param content the Java content
+	 */
 	public void parse(String content) {
 		this.content = content;
 
+		// TODO: Sometimes this doesn't work
 		JavaParser parser = new JavaParser();
 		ParseResult<CompilationUnit> result = parser.parse(content);
 		CompilationUnit cu = result.getResult().orElse(null);
@@ -111,6 +114,16 @@ public class ClassFileContainer extends FileContainer {
 		}
 	}
 
+	public void setHasBeenDecompiled(boolean hasBeenDecompiled) {
+		this.hasBeenDecompiled = hasBeenDecompiled;
+	}
+
+	/**
+	 * Get the method and turn it into the structure pane text
+	 *
+	 * @param method the method
+	 * @return the structure text
+	 */
 	private @NotNull String getMethodKey(@NotNull MethodDeclaration method) {
 		String methodType = method.getTypeAsString();
 		String methodName = method.getNameAsString();
@@ -127,6 +140,33 @@ public class ClassFileContainer extends FileContainer {
 		return methodName + "(" + parameterTypeString + "): " + methodType;
 	}
 
+	/**
+	 * Get the classes constructor and turns it into the structure pane text
+	 *
+	 * @param constructor the constructor
+	 * @return the constructor as the structure text
+	 */
+	private @NotNull String getConstructorKeyString(@NotNull ConstructorDeclaration constructor) {
+		String constructorName = constructor.getNameAsString();
+		NodeList<Parameter> parameters = constructor.getParameters();
+		List<String> parameterTypeList = new ArrayList<>();
+		for (Iterator<Parameter> it = parameters.stream().iterator(); it.hasNext(); ) {
+			Parameter parameter = it.next();
+			String type = parameter.getTypeAsString();
+			parameterTypeList.add(type);
+		}
+
+		String parameterTypeString = parameterTypeList.toString().substring(1,
+				parameterTypeList.toString().length() - 1);
+		return constructorName + "(" + parameterTypeString + ")";
+	}
+
+	/**
+	 * Put the method into the containers {@code memberMap}.
+	 *
+	 * @param method the method
+	 * @param key    the method's structure text
+	 */
 	private void putMethod(@NotNull MethodDeclaration method, String key) {
 		if (method.isPrivate() && !method.isStatic()) {
 			this.memberMap.put(key, Icons.methodPrivateIcon);
@@ -139,6 +179,12 @@ public class ClassFileContainer extends FileContainer {
 		}
 	}
 
+	/**
+	 * Put the field into the containers {@code memberMap}.
+	 *
+	 * @param field          the field
+	 * @param declaratorType the field's structure text
+	 */
 	private void putField(@NotNull FieldDeclaration field, String declaratorType) {
 		if (field.isPrivate() && !field.isStatic()) {
 			this.memberMap.put(field.getVariable(0).getNameAsString() + ": " + declaratorType,
@@ -155,23 +201,8 @@ public class ClassFileContainer extends FileContainer {
 		}
 	}
 
-	private static @NotNull String getConstructorKeyString(@NotNull ConstructorDeclaration constructor) {
-		String constructorName = constructor.getNameAsString();
-		NodeList<Parameter> parameters = constructor.getParameters();
-		List<String> parameterTypeList = new ArrayList<>();
-		for (Iterator<Parameter> it = parameters.stream().iterator(); it.hasNext(); ) {
-			Parameter parameter = it.next();
-			String type = parameter.getTypeAsString();
-			parameterTypeList.add(type);
-		}
-
-		String parameterTypeString = parameterTypeList.toString().substring(1,
-				parameterTypeList.toString().length() - 1);
-		return constructorName + "(" + parameterTypeString + ")";
-	}
-
 	private void findToken(@NotNull TokenRange tokenRange, @NotNull String token, Type type, String owner) {
-		List<ClassMemberLocation> locations = new ArrayList<>();
+		List<ClassFieldLocation> locations = new ArrayList<>();
 		/*Iterator<JavaToken> it = tokenRange.iterator();
 		while (it.hasNext()) {
 			JavaToken javaToken = it.next();
@@ -186,7 +217,7 @@ public class ClassFileContainer extends FileContainer {
 //					}
 //				}
 
-				ClassMemberLocation location = new ClassMemberLocation(owner, line, beginColumn, endColumn);
+				ClassFieldLocation location = new ClassFieldLocation(owner, line, beginColumn, endColumn);
 				if (!locations.contains(location)) {
 					locations.add(location);
 //					this.tokenRanges.put(token, locations);
@@ -199,23 +230,23 @@ public class ClassFileContainer extends FileContainer {
 		return content;
 	}
 
-	public NavigableMap<String, ArrayList<ClassMemberLocation>> getFieldMembers() {
+	public NavigableMap<String, ArrayList<ClassFieldLocation>> getFieldMembers() {
 		return fieldMembers;
 	}
 
-	public List<ClassMemberLocation> getMemberLocationsFor(String key) {
+	public List<ClassFieldLocation> getMemberLocationsFor(String key) {
 		return fieldMembers.getOrDefault(key, new ArrayList<>());
 	}
 
-	public List<ClassMemberLocation> getParameterLocationsFor(String key) {
+	public List<ClassParameterLocation> getParameterLocationsFor(String key) {
 		return methodParameterMembers.getOrDefault(key, new ArrayList<>());
 	}
 
-	public List<ClassMemberLocation> getLocalLocationsFor(String key) {
+	public List<ClassLocalVariableLocation> getLocalLocationsFor(String key) {
 		return methodLocalMembers.getOrDefault(key, new ArrayList<>());
 	}
 
-	public List<ClassMemberLocation> getMethodLocationsFor(String key) {
+	public List<ClassMethodLocation> getMethodLocationsFor(String key) {
 		return methodMembers.getOrDefault(key, new ArrayList<>());
 	}
 }

@@ -24,15 +24,15 @@
 
 package com.github.bl3nd.byteview.misc;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.logging.Logger;
 
 /**
  * Created by Bl3nd.
- * Date: 5/22/2024
+ * Date: 6/15/2024
  */
-public class Constants {
-	public static final String FOLDER_LOCATION = System.getProperty("user.home") + "/Byte View";
-	public static final String TEMP_LOCATION = FOLDER_LOCATION + "/temp";
-	public static final String CONFIG_LOCATION = FOLDER_LOCATION + "/configuration.json";
+public class MyLogger extends Logger {
+
+	public MyLogger(String name) {
+		super(name, null);
+	}
 }

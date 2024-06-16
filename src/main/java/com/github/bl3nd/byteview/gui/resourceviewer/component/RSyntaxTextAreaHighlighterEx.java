@@ -44,8 +44,11 @@ public class RSyntaxTextAreaHighlighterEx extends RSyntaxTextAreaHighlighter {
 	private List<SyntaxLayeredHighlightInfoImpl> markedOccurrences = new ArrayList<>();
 	private static final Color DEFAULT_PARSER_NOTICE_COLOR = Color.RED;
 
-	public Object addMarkedOccurrenceHighlight(int start, int end,
-											   SmartHighlightPainter p) throws BadLocationException {
+	public Object addMarkedOccurrenceHighlight(
+			int start,
+			int end,
+			SmartHighlightPainter p
+	) throws BadLocationException {
 		Document doc = textArea.getDocument();
 		TextUI mapper = textArea.getUI();
 		// Always layered highlights for marked occurrences.
@@ -89,8 +92,14 @@ public class RSyntaxTextAreaHighlighterEx extends RSyntaxTextAreaHighlighter {
 	}
 
 	@Override
-	public void paintLayeredHighlights(Graphics g, int lineStart, int lineEnd,
-									   Shape viewBounds, JTextComponent editor, View view) {
+	public void paintLayeredHighlights(
+			Graphics g,
+			int lineStart,
+			int lineEnd,
+			Shape viewBounds,
+			JTextComponent editor,
+			View view
+	) {
 		paintListLayered(g, lineStart, lineEnd, viewBounds, editor, view, markedOccurrences);
 		super.paintLayeredHighlights(g, lineStart, lineEnd, viewBounds, editor, view);
 	}

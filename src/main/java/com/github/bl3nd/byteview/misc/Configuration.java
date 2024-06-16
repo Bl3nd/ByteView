@@ -44,6 +44,8 @@ import java.util.List;
 import static com.github.bl3nd.byteview.misc.Constants.CONFIG_LOCATION;
 
 /**
+ * User's configuration.
+ * <p>
  * Created by Bl3nd.
  * Date: 5/18/2024
  */
@@ -57,14 +59,19 @@ public class Configuration {
 	private String currentDecompiler;
 	private final HashMap<String, Boolean> vineFlowerSettings = new HashMap<>();
 
+	/**
+	 * Build the document if there is no configuration.
+	 */
 	public void buildDocument() {
 		try {
 			JsonObject rootObject = Json.object();
 
 			String fontFamily = UIManager.getFont("Label.font").getFamily();
 			rootObject.add("fontFamily", currentFontFamily != null ? currentFontFamily : fontFamily);
-			rootObject.add("recentUploadedDirectory", recentUploadedDirectory != null ?
-					recentUploadedDirectory.getAbsolutePath() : System.getProperty("user.home"));
+			rootObject.add("recentUploadedDirectory",
+					recentUploadedDirectory != null
+							? recentUploadedDirectory.getAbsolutePath()
+							: System.getProperty("user.home"));
 			rootObject.add("alwaysShowHierarchy", alwaysShowHierarchy);
 			rootObject.add("currentDecompiler", "none");
 
@@ -123,6 +130,9 @@ public class Configuration {
 		}
 	}
 
+	/**
+	 * Read the configuration and set any settings needed.
+	 */
 	public void read() {
 		try {
 			FileReader fileReader = new FileReader(CONFIG_LOCATION);
@@ -180,6 +190,12 @@ public class Configuration {
 		}
 	}
 
+	/**
+	 * Update the configuration by setting.
+	 *
+	 * @param name  the setting to change
+	 * @param value the new value
+	 */
 	private void updateJson(String name, Object value) {
 		try {
 			FileReader fileReader = new FileReader(CONFIG_LOCATION);
@@ -245,8 +261,9 @@ public class Configuration {
 					JMenuItem source = (JMenuItem) e.getSource();
 					File file = new File(source.getText());
 					if (!ByteView.mainFrame.resourcePane.uploadedFiles.containsKey(file.getName())) {
-						String extension =
-								file.getAbsolutePath().substring(file.getAbsolutePath().lastIndexOf(".") + 1);
+						String extension = file
+								.getAbsolutePath()
+								.substring(file.getAbsolutePath().lastIndexOf(".") + 1);
 						if (extension.equalsIgnoreCase("class")) {
 							ClassFileUploader uploader = new ClassFileUploader(new File(source.getText()));
 							uploader.upload();
@@ -295,6 +312,12 @@ public class Configuration {
 		return vineFlowerSettings;
 	}
 
+	/**
+	 * Update any VineFlower setting.
+	 *
+	 * @param settings the settings to change
+	 * @throws IOException when an error occurs
+	 */
 	public void updateVineFlowerSettings(@NotNull HashMap<String, Boolean> settings) throws IOException {
 		FileReader fileReader = new FileReader(CONFIG_LOCATION);
 		JsonObject rootObject = (JsonObject) Json.parse(fileReader);

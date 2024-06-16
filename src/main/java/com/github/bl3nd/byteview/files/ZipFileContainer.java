@@ -32,6 +32,8 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 
 /**
+ * A container for Zip files.
+ * <p>
  * Created by Bl3nd.
  * Date: 6/1/2024
  */

@@ -39,9 +39,16 @@ import java.util.List;
  */
 public class DecompilerDialog {
 
+	/**
+	 * Don't allow initialization
+	 */
 	private DecompilerDialog() {
 	}
 
+	/**
+	 * Opens a confirm dialog, when user does not have a decompiler selected
+	 * @return an integer indicating the option the user selected
+	 */
 	public static int open() {
 		JPanel panel = new JPanel();
 		panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
@@ -60,6 +67,10 @@ public class DecompilerDialog {
 				"Set a decompiler", JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE);
 	}
 
+	/**
+	 * Change the user's current decompiler
+	 * @param event The action
+	 */
 	private static void changeCompiler(@NotNull ActionEvent event) {
 		JComboBox<?> comboBox = (JComboBox<?>) event.getSource();
 		String selectedDecompiler = (String) comboBox.getSelectedItem();

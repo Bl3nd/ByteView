@@ -35,6 +35,12 @@ import java.io.*;
  * Date: 5/14/2024
  */
 public class FileMisc {
+	/**
+	 * Remove the extension from a string.
+	 *
+	 * @param fileName the file's name
+	 * @return the extension-less file name
+	 */
 	public static @NotNull String removeExtension(@NotNull String fileName) {
 		int lastPeriod = fileName.lastIndexOf('.');
 		if (lastPeriod > 0) {
@@ -44,9 +50,16 @@ public class FileMisc {
 		return fileName;
 	}
 
+	/**
+	 * Reads a file's content.
+	 *
+	 * @param input the {@link File} to read
+	 * @return the file's content
+	 * @throws IOException when an error occurs
+	 */
 	@Contract(pure = true)
-	public synchronized static @NotNull String read(File output) throws IOException {
-		FileInputStream fis = new FileInputStream(output);
+	public synchronized static @NotNull String read(File input) throws IOException {
+		FileInputStream fis = new FileInputStream(input);
 		StringBuilder result = new StringBuilder();
 		try (BufferedReader reader = new BufferedReader(new InputStreamReader(fis))) {
 			String line;

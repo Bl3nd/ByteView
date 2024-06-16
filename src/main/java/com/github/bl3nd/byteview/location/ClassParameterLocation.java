@@ -22,17 +22,20 @@
  * SOFTWARE.
  */
 
-package com.github.bl3nd.byteview.misc;
+package com.github.bl3nd.byteview.location;
 
-import java.util.ArrayList;
-import java.util.List;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Created by Bl3nd.
- * Date: 5/22/2024
+ * Date: 6/15/2024
  */
-public class Constants {
-	public static final String FOLDER_LOCATION = System.getProperty("user.home") + "/Byte View";
-	public static final String TEMP_LOCATION = FOLDER_LOCATION + "/temp";
-	public static final String CONFIG_LOCATION = FOLDER_LOCATION + "/configuration.json";
+public record ClassParameterLocation(String owner, String method, String decRef, int line, int columnStart,
+									 int columnEnd) {
+	@Override
+	public @NotNull String toString() {
+		return "owner: " + owner + ", method: " + method + ", decRef: " + decRef + ", line: " + line + ", columnStart:" +
+				" " + columnStart + ", columnEnd: " + columnEnd;
+	}
 }

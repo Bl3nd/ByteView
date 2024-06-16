@@ -22,32 +22,20 @@
  * SOFTWARE.
  */
 
-package com.github.bl3nd.byteview.gui.resourceviewer.component;
+package com.github.bl3nd.byteview.location;
 
-import com.formdev.flatlaf.FlatClientProperties;
-import com.github.bl3nd.byteview.misc.Icons;
-
-import javax.swing.*;
-import java.awt.*;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Created by Bl3nd.
- * Date: 6/6/2024
+ * Date: 5/27/2024
  */
-public class TabComponentLabel extends JPanel {
-	public TabComponentLabel(String name, Icon icon) {
-		super();
-		JPanel panel = new JPanel();
-		panel.setOpaque(false);
-		panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
-		panel.add(new JLabel(icon));
-		panel.add(Box.createRigidArea(new Dimension(6, this.getHeight())));
-		panel.add(new JLabel(name));
-		panel.add(Box.createRigidArea(new Dimension(6, this.getHeight())));
-		JButton close = new JButton(Icons.closeIcon);
-		close.putClientProperty(FlatClientProperties.STYLE, "margin:1,1,1,1");
-		panel.add(close);
-		add(panel);
-		setOpaque(false);
+public record ClassFieldLocation(String owner, String decRef, int line, int columnStart, int columnEnd) {
+
+	@Contract(pure = true)
+	@Override
+	public @NotNull String toString() {
+		return "owner: " + owner + ", decRef: " + decRef + ", line: " + line + ", columnStart: " + columnStart + ", columnEnd: " + columnEnd;
 	}
 }

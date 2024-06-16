@@ -68,6 +68,9 @@ public class ByteView {
 		configuration.resetRecentFilesMenu();
 	}
 
+	/**
+	 * Setup FlatLaf UI specific customizations
+	 */
 	private static void setupUISettings() {
 		UIManager.put("TitlePane.unifiedBackground", false);
 		UIManager.put("Component.hideMnemonics", false);

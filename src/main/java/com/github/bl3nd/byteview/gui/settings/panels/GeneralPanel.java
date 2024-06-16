@@ -40,6 +40,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 /**
+ * General settings page
+ * <p>
  * Created by Bl3nd.
  * Date: 5/26/2024
  */

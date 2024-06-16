@@ -22,17 +22,20 @@
  * SOFTWARE.
  */
 
-package com.github.bl3nd.byteview.misc;
+package com.github.bl3nd.byteview.location;
+
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Created by Bl3nd.
- * Date: 5/27/2024
+ * Date: 6/15/2024
  */
-public record ClassMemberLocation(String owner, String methodOwner, String decRef, int line, int columnStart, int columnEnd) {
-
-
+public record ClassMethodLocation(String owner, String methodParameterTypes, String decRef, int line, int columnStart,
+								  int columnEnd) {
 	@Override
-	public String toString() {
-		return "owner: " + owner + ", methodOwner: " + methodOwner + ", decRef: " + decRef + ", line: " + line + ", columnStart: " + columnStart + ", columnEnd: " + columnEnd;
+	public @NotNull String toString() {
+		return "Owner: " + owner + ", methodParameterTypes: " + methodParameterTypes + ", decRef: " + decRef + ", " +
+				"line: " + line + ", columnStart: " + columnStart + ", columnEnd: " + columnEnd;
 	}
 }

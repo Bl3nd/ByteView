@@ -32,6 +32,8 @@ import javax.swing.*;
 import java.util.HashMap;
 
 /**
+ * VineFlower settings page
+ * <p>
  * Created by Bl3nd.
  * Date: 5/27/2024
  */
@@ -73,7 +75,8 @@ public class VineFlowerSettingPanel extends JPanel {
 		// --decompile-complex-constant-dynamic
 		JLabel complexConstantDynamic = new JLabel("Decompile complex constant-dynamic. See VineFlower's usage for " +
 				"this setting.");
-		DecompilerSettingCheckBox complexConstantDynamicCheckbox = new DecompilerSettingCheckBox("--decompile-complex-constant-dynamic");
+		DecompilerSettingCheckBox complexConstantDynamicCheckbox = new DecompilerSettingCheckBox("--decompile-complex" +
+				"-constant-dynamic");
 		complexConstantDynamicCheckbox.setSelected(settings.get("--decompile-complex-constant-dynamic"));
 
 		// --decompile-enums
@@ -110,7 +113,8 @@ public class VineFlowerSettingPanel extends JPanel {
 
 		// --decompile-switch-expressions
 		JLabel switchExpressions = new JLabel("Decompile switch expressions in modern Java class files");
-		DecompilerSettingCheckBox switchExpressionsCheckbox = new DecompilerSettingCheckBox("--decompile-switch-expressions");
+		DecompilerSettingCheckBox switchExpressionsCheckbox = new DecompilerSettingCheckBox("--decompile-switch" +
+				"-expressions");
 		switchExpressionsCheckbox.setSelected(settings.get("--decompile-switch-expressions"));
 
 		// --decompiler-comments
@@ -120,7 +124,8 @@ public class VineFlowerSettingPanel extends JPanel {
 
 		// --dump-bytecode-on-error
 		JLabel dumpBytecodeOnError = new JLabel("Dump the bytecode in the method body when an error occurs");
-		DecompilerSettingCheckBox dumpBytecodeOnErrorCheckbox = new DecompilerSettingCheckBox("--dump-bytecode-on-error");
+		DecompilerSettingCheckBox dumpBytecodeOnErrorCheckbox = new DecompilerSettingCheckBox("--dump-bytecode-on" +
+				"-error");
 		dumpBytecodeOnErrorCheckbox.setSelected(settings.get("--dump-bytecode-on-error"));
 
 		// --dump-code-lines
@@ -131,7 +136,8 @@ public class VineFlowerSettingPanel extends JPanel {
 		// --dump-exception-on-error
 		JLabel dumpExceptionOnError = new JLabel("Dump the exception message in the method body or source file when " +
 				"an error occurs");
-		DecompilerSettingCheckBox dumpExceptionOnErrorCheckbox = new DecompilerSettingCheckBox("--dump-exception-on-error");
+		DecompilerSettingCheckBox dumpExceptionOnErrorCheckbox = new DecompilerSettingCheckBox("--dump-exception-on" +
+				"-error");
 		dumpExceptionOnErrorCheckbox.setSelected(settings.get("--dump-exception-on-error"));
 
 		// --explicit-generics
@@ -147,7 +153,8 @@ public class VineFlowerSettingPanel extends JPanel {
 
 		// --hide-default-constructor
 		JLabel defaultConstructor = new JLabel("Hide constructors with no parameters and no code");
-		DecompilerSettingCheckBox defaultConstructorCheckbox = new DecompilerSettingCheckBox("--hide-default-constructor");
+		DecompilerSettingCheckBox defaultConstructorCheckbox = new DecompilerSettingCheckBox("--hide-default" +
+				"-constructor");
 		defaultConstructorCheckbox.setSelected(settings.get("--hide-default-constructor"));
 
 		// --hide-empty-super
@@ -183,13 +190,15 @@ public class VineFlowerSettingPanel extends JPanel {
 
 		// --lambda-to-anonymous-class
 		JLabel lambdaToAnonymous = new JLabel("Decompile lambda expressions as anonymous classes");
-		DecompilerSettingCheckBox lambdaToAnonymousCheckbox = new DecompilerSettingCheckBox("--lambda-to-anonymous-class");
+		DecompilerSettingCheckBox lambdaToAnonymousCheckbox = new DecompilerSettingCheckBox("--lambda-to-anonymous" +
+				"-class");
 		lambdaToAnonymousCheckbox.setSelected(settings.get("--lambda-to-anonymous-class"));
 
 		// --mark-corresponding-synthetics
 		JLabel correspondingSynthetics = new JLabel("Mark lambdas and anonymous and local classes with their " +
 				"respective synthetic constructs");
-		DecompilerSettingCheckBox correspondingSyntheticsCheckbox = new DecompilerSettingCheckBox("--mark-corresponding-synthetics");
+		DecompilerSettingCheckBox correspondingSyntheticsCheckbox = new DecompilerSettingCheckBox("--mark" +
+				"-corresponding-synthetics");
 		correspondingSyntheticsCheckbox.setSelected(settings.get("--mark-corresponding-synthetics"));
 
 		// --override-annotation
@@ -214,7 +223,8 @@ public class VineFlowerSettingPanel extends JPanel {
 
 		// --remove-getclass
 		JLabel removeGetClassInvocation = new JLabel("Remove synthetic getClass() calls");
-		DecompilerSettingCheckBox removeGetClassInvocationCheckbox = new DecompilerSettingCheckBox("--remove-getclass");
+		DecompilerSettingCheckBox removeGetClassInvocationCheckbox = new DecompilerSettingCheckBox("--remove" +
+				"-getclass");
 		removeGetClassInvocationCheckbox.setSelected(settings.get("--remove-getclass"));
 
 		// --remove-synthetic
@@ -240,7 +250,8 @@ public class VineFlowerSettingPanel extends JPanel {
 		// --ternary-constant-simplification
 		JLabel constantSimplification = new JLabel("Fold branches of ternary expressions that have boolean true and " +
 				"false constants");
-		DecompilerSettingCheckBox constantSimplificationCheckbox = new DecompilerSettingCheckBox("--ternary-constant-simplification");
+		DecompilerSettingCheckBox constantSimplificationCheckbox = new DecompilerSettingCheckBox("--ternary-constant" +
+				"-simplification");
 		constantSimplificationCheckbox.setSelected(settings.get("--ternary-constant-simplification"));
 
 		// --ternary-in-if
@@ -267,7 +278,8 @@ public class VineFlowerSettingPanel extends JPanel {
 
 		// --verify-anonymous-classes
 		JLabel verifyAnonymousClasses = new JLabel("Verify that anonymous classes are local");
-		DecompilerSettingCheckBox verifyAnonymousClassesCheckbox = new DecompilerSettingCheckBox("--verify-anonymous-classes");
+		DecompilerSettingCheckBox verifyAnonymousClassesCheckbox = new DecompilerSettingCheckBox("--verify-anonymous" +
+				"-classes");
 		verifyAnonymousClassesCheckbox.setSelected(settings.get("--verify-anonymous-classes"));
 
 		// --verify-merges
@@ -459,7 +471,8 @@ public class VineFlowerSettingPanel extends JPanel {
 				)
 				.addGroup(
 						layout.createSequentialGroup()
-								.addPreferredGap(title, incorporateReturnsCheckbox, LayoutStyle.ComponentPlacement.INDENT,
+								.addPreferredGap(title, incorporateReturnsCheckbox,
+										LayoutStyle.ComponentPlacement.INDENT,
 										15, 15)
 								.addComponent(incorporateReturnsCheckbox)
 								.addPreferredGap(LayoutStyle.ComponentPlacement.RELATED, 20, 20)
@@ -483,7 +496,8 @@ public class VineFlowerSettingPanel extends JPanel {
 				)
 				.addGroup(
 						layout.createSequentialGroup()
-								.addPreferredGap(title, lambdaToAnonymousCheckbox, LayoutStyle.ComponentPlacement.INDENT,
+								.addPreferredGap(title, lambdaToAnonymousCheckbox,
+										LayoutStyle.ComponentPlacement.INDENT,
 										15, 15)
 								.addComponent(lambdaToAnonymousCheckbox)
 								.addPreferredGap(LayoutStyle.ComponentPlacement.RELATED, 20, 20)
@@ -491,7 +505,8 @@ public class VineFlowerSettingPanel extends JPanel {
 				)
 				.addGroup(
 						layout.createSequentialGroup()
-								.addPreferredGap(title, correspondingSyntheticsCheckbox, LayoutStyle.ComponentPlacement.INDENT,
+								.addPreferredGap(title, correspondingSyntheticsCheckbox,
+										LayoutStyle.ComponentPlacement.INDENT,
 										15, 15)
 								.addComponent(correspondingSyntheticsCheckbox)
 								.addPreferredGap(LayoutStyle.ComponentPlacement.RELATED, 20, 20)
@@ -499,7 +514,8 @@ public class VineFlowerSettingPanel extends JPanel {
 				)
 				.addGroup(
 						layout.createSequentialGroup()
-								.addPreferredGap(title, overrideAnnotationCheckbox, LayoutStyle.ComponentPlacement.INDENT,
+								.addPreferredGap(title, overrideAnnotationCheckbox,
+										LayoutStyle.ComponentPlacement.INDENT,
 										15, 15)
 								.addComponent(overrideAnnotationCheckbox)
 								.addPreferredGap(LayoutStyle.ComponentPlacement.RELATED, 20, 20)

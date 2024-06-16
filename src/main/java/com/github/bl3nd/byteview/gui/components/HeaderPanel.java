@@ -28,6 +28,8 @@ import javax.swing.*;
 import java.awt.*;
 
 /**
+ * Custom JPanel that has a header and content.
+ * <p>
  * Created by Bl3nd.
  * Date: 5/12/2024
  */
@@ -39,6 +41,13 @@ public class HeaderPanel extends JPanel {
 	private final Icon icon;
 	private final Insets insets;
 
+	/**
+	 * Custom JPanel
+	 *
+	 * @param title  the header title
+	 * @param icon   the header icon
+	 * @param insets the header border insets
+	 */
 	public HeaderPanel(String title, Icon icon, Insets insets) {
 		super(new BorderLayout());
 		this.title = title;
@@ -68,7 +77,8 @@ public class HeaderPanel extends JPanel {
 		header.add(titleLabel);
 		header.setMinimumSize(new Dimension(50, 10));
 		header.setPreferredSize(new Dimension(50, 32));
-		header.setBorder(new MutableLineBorder(UIManager.getColor("Component.borderColor"), insets.top, insets.left, insets.bottom, insets.right));
+		header.setBorder(new MutableLineBorder(UIManager.getColor("Component.borderColor"), insets.top, insets.left,
+				insets.bottom, insets.right));
 	}
 
 	private void createContent() {
@@ -82,8 +92,12 @@ public class HeaderPanel extends JPanel {
 		add(scrollPane, BorderLayout.CENTER);
 	}
 
+	/**
+	 * NOTE: Whenever {@code FlatLaf.updateUI()} is called, add this below the call!
+	 */
 	public void resetBorders() {
-		header.setBorder(new MutableLineBorder(UIManager.getColor("Component.borderColor"), insets.top, insets.left, insets.bottom, insets.right));
+		header.setBorder(new MutableLineBorder(UIManager.getColor("Component.borderColor"), insets.top, insets.left,
+				insets.bottom, insets.right));
 	}
 
 	@Override

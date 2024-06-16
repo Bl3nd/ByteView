@@ -41,7 +41,6 @@ public class FileResourceTreeCellRenderer extends DefaultTreeCellRenderer {
 	public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus) {
 		Component comp = super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
 		if (value instanceof MyTreeNode node) {
-			boolean iconSet = false;
 			if (node.getParent() == null) {
 				return comp;
 			}
@@ -51,11 +50,9 @@ public class FileResourceTreeCellRenderer extends DefaultTreeCellRenderer {
 			if (nameWithExtension.endsWith(".java")) {
 				setNodeIcon(node, Icons.javaFileIcon);
 				setText(name);
-				iconSet = true;
 			} else if (nameWithExtension.endsWith(".class")) {
 				setNodeIcon(node, Icons.classFileIcon);
 				setText(name);
-				iconSet = true;
 			}
 		}
 

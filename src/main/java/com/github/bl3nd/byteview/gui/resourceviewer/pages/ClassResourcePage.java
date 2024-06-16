@@ -28,7 +28,10 @@ import com.github.bl3nd.byteview.ByteView;
 import com.github.bl3nd.byteview.files.ClassFileContainer;
 import com.github.bl3nd.byteview.gui.components.MyErrorStripe;
 import com.github.bl3nd.byteview.gui.resourceviewer.component.RSyntaxTextAreaHighlighterEx;
-import com.github.bl3nd.byteview.misc.ClassMemberLocation;
+import com.github.bl3nd.byteview.location.ClassFieldLocation;
+import com.github.bl3nd.byteview.location.ClassLocalVariableLocation;
+import com.github.bl3nd.byteview.location.ClassMethodLocation;
+import com.github.bl3nd.byteview.location.ClassParameterLocation;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
 import org.fife.ui.rsyntaxtextarea.Token;
@@ -44,6 +47,8 @@ import java.awt.event.*;
 import java.util.Objects;
 
 /**
+ * A page that contains a decompiled classes text.
+ * <p>
  * Created by Bl3nd.
  * Date: 5/30/2024
  */
@@ -77,85 +82,119 @@ public class ClassResourcePage extends Page {
 			}
 		});
 
-//		ErrorStrip errorStrip = new ErrorStrip(textArea);
-//		errorStrip.setShowMarkedOccurrences(true);
-//		add(errorStrip, BorderLayout.LINE_END);
+		textArea.addCaretListener(e -> {
+			RSyntaxTextAreaHighlighterEx highlighterEx = (RSyntaxTextAreaHighlighterEx) textArea.getHighlighter();
+			highlighterEx.clearMarkOccurrencesHighlights();
+
+			RSyntaxTextArea textArea = (RSyntaxTextArea) e.getSource();
+			markOccurrences(textArea, classFileContainer);
+		});
 
 		errorStripe = new MyErrorStripe(textArea);
 		add(errorStripe, BorderLayout.LINE_END);
 
+		/*
+		This action goes to a members declaration.
+		TODO: Possibly add this in its own Action class to de-clutter this file.
+		 */
 		textArea.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_B, InputEvent.CTRL_DOWN_MASK), "goToAction");
 		textArea.getActionMap().put("goToAction", new AbstractAction() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				RSyntaxTextArea textArea = (RSyntaxTextArea) e.getSource();
-				Token token = textArea.modelToToken(textArea.getCaretPosition());
-				/*if (token == null || !classFileContainer.getTokenRanges().containsKey(token.getLexeme())) {
-					return;
-				}
-
-				Element root = textArea.getDocument().getDefaultRootElement();
-				ClassMemberLocation first = classFileContainer.getTokenRanges().get(token.getLexeme()).getFirst();
-				int startOffset = root.getElement(first.line() - 1).getStartOffset() + (first.columnStart() - 1);
-				textArea.setCaretPosition(startOffset);*/
-
+				Token token = textArea.modelToToken(textArea.getCaretPosition() - 1);
 				if (token == null) {
 					return;
 				}
 
+				token = token.getLexeme().isBlank()
+						|| Objects.equals(token.getLexeme(), ".")
+						|| Objects.equals(token.getLexeme(), "(")
+						|| Objects.equals(token.getLexeme(), "[")
+						|| Objects.equals(token.getLexeme(), "~")
+						|| Objects.equals(token.getLexeme(), "-")
+						|| Objects.equals(token.getLexeme(), "+")
+						? textArea.modelToToken(textArea.getCaretPosition())
+						: token;
+
 				int line = textArea.getCaretLineNumber() + 1;
 				int column = textArea.getCaretOffsetFromLineStart();
 
+				/*
+				Fields
+				 */
 				classFileContainer.fieldMembers.values().forEach(fields -> fields.forEach(field -> {
 					if (field.line() == line && field.columnStart() - 1 <= column && field.columnEnd() >= column) {
 						Element root = textArea.getDocument().getDefaultRootElement();
-						ClassMemberLocation first = fields.getFirst();
-						int startOffset =
-								root.getElement(first.line() - 1).getStartOffset() + (first.columnStart() - 1);
+						ClassFieldLocation first = fields.getFirst();
+						int startOffset = root
+								.getElement(first.line() - 1)
+								.getStartOffset() + (first.columnStart() - 1);
 						textArea.setCaretPosition(startOffset);
 					}
 				}));
 
+				/*
+				Methods
+				 */
+				Token finalToken = token;
 				classFileContainer.methodMembers.values().forEach(methods -> methods.forEach(method -> {
 					if (method.line() == line && method.columnStart() - 1 <= column && method.columnEnd() >= column) {
 						Element root = textArea.getDocument().getDefaultRootElement();
-						ClassMemberLocation first = methods.getFirst();
-						if (!Objects.equals(method.owner(), first.owner())) {
-							return;
-						}
+						for (
+								ClassMethodLocation location
+								: classFileContainer.getMethodLocationsFor(finalToken.getLexeme())
+						) {
+							if (!Objects.equals(method.owner(), location.owner())) {
+								continue;
+							}
 
-						if (!first.decRef().equalsIgnoreCase("declaration")) {
-							return;
-						}
+							if (!Objects.equals(method.methodParameterTypes(), location.methodParameterTypes())) {
+								continue;
+							}
 
-						int startOffset =
-								root.getElement(first.line() - 1).getStartOffset() + (first.columnStart() - 1);
-						textArea.setCaretPosition(startOffset);
+							if (location.decRef().equalsIgnoreCase("declaration")) {
+								int startOffset = root
+										.getElement(location.line() - 1)
+										.getStartOffset() + (location.columnStart() - 1);
+								textArea.setCaretPosition(startOffset);
+							}
+						}
 					}
 				}));
 
+				/*
+				Method parameters
+				 */
 				classFileContainer.methodParameterMembers.values().forEach(parameters -> parameters.forEach(parameter -> {
 					if (parameter.line() == line && parameter.columnStart() - 1 <= column && parameter.columnEnd() >= column) {
 						Element root = textArea.getDocument().getDefaultRootElement();
-						ClassMemberLocation first = parameters.getFirst();
-						if (!Objects.equals(parameter.methodOwner(), first.methodOwner())) {
+						ClassParameterLocation first = parameters.getFirst();
+						if (!Objects.equals(parameter.method(), first.method())) {
 							return;
 						}
 
-						int startOffset = root.getElement(first.line() - 1).getStartOffset() + (first.columnStart() - 1);
+						int startOffset = root
+								.getElement(first.line() - 1)
+								.getStartOffset() + (first.columnStart() - 1);
 						textArea.setCaretPosition(startOffset);
 					}
 				}));
 
+				/*
+				Method local variables
+				 */
 				classFileContainer.methodLocalMembers.values().forEach(localMembers -> localMembers.forEach(localMember -> {
 					if (localMember.line() == line && localMember.columnStart() - 1 <= column && localMember.columnEnd() >= column) {
 						Element root = textArea.getDocument().getDefaultRootElement();
-						ClassMemberLocation first = localMembers.getFirst();
-						if (!Objects.equals(localMember.methodOwner(), first.methodOwner())) {
+						ClassLocalVariableLocation first = localMembers.getFirst();
+						if (!Objects.equals(localMember.method(), first.method())) {
 							return;
 						}
 
-						int startOffset = root.getElement(first.line() - 1).getStartOffset() + (first.columnStart() - 1);
+						int startOffset = root
+								.getElement(first.line() - 1)
+								.getStartOffset() + (first.columnStart() - 1);
 						textArea.setCaretPosition(startOffset);
 					}
 				}));
@@ -168,8 +207,16 @@ public class ClassResourcePage extends Page {
 		setVisible(true);
 	}
 
-	public void markOccurrences(@NotNull RSyntaxTextArea textArea,
-										@NotNull ClassFileContainer classFileContainer) {
+	/**
+	 * Mark the occurrences of a particular class member.
+	 *
+	 * @param textArea           The text area which to search the tokens
+	 * @param classFileContainer The pages container
+	 */
+	public void markOccurrences(
+			@NotNull RSyntaxTextArea textArea,
+			@NotNull ClassFileContainer classFileContainer
+	) {
 		RSyntaxTextAreaHighlighterEx highlighterEx = (RSyntaxTextAreaHighlighterEx) textArea.getHighlighter();
 		Token token = textArea.modelToToken(textArea.getCaretPosition() - 1);
 		if (token == null || token.getLexeme().equals(";")) {
@@ -178,8 +225,15 @@ public class ClassResourcePage extends Page {
 			return;
 		}
 
-		token = Objects.equals(token.getLexeme(), " ") || Objects.equals(token.getLexeme(), ".") ?
-				textArea.modelToToken(textArea.getCaretPosition() + 1) : token;
+		token = token.getLexeme().isBlank()
+				|| Objects.equals(token.getLexeme(), ".")
+				|| Objects.equals(token.getLexeme(), "(")
+				|| Objects.equals(token.getLexeme(), "[")
+				|| Objects.equals(token.getLexeme(), "~")
+				|| Objects.equals(token.getLexeme(), "-")
+				|| Objects.equals(token.getLexeme(), "+")
+				? textArea.modelToToken(textArea.getCaretPosition())
+				: token;
 		if (token == null) {
 			highlighterEx.clearMarkOccurrencesHighlights();
 			errorStripe.refreshMarkers();
@@ -189,108 +243,224 @@ public class ClassResourcePage extends Page {
 
 		highlighterEx.clearMarkOccurrencesHighlights();
 
-		/*int line = textArea.getCaretLineNumber();
-		int column = textArea.getCaretOffsetFromLineStart();
-		Collection<ArrayList<ClassMemberLocation>> values = classFileContainer.tokenRanges.values();
-		for (int i = 0; i < values.size(); i++) {
-			for (ArrayList<ClassMemberLocation> value : values) {
-				ClassMemberLocation location = value.get(i);
-				if (location.line() == line && location.columnStart() <= column && location.columnEnd() >= column) {
-					System.err.println();
-				}
-			}
-		}*/
 		int line = textArea.getCaretLineNumber() + 1;
 		int column = textArea.getCaretOffsetFromLineStart();
 		Token finalToken = token;
 
-		classFileContainer.fieldMembers.values().forEach(field -> field.forEach(member -> {
-			if (member.line() == line && member.columnStart() - 1 <= column && member.columnEnd() >= column) {
-				try {
-					Element root = textArea.getDocument().getDefaultRootElement();
-					for (ClassMemberLocation location : classFileContainer.getMemberLocationsFor(finalToken.getLexeme())) {
-						int startOffset =
-								root.getElement(location.line() - 1).getStartOffset() + (location.columnStart() - 1);
-						int endOffset = root.getElement(location.line() - 1).getStartOffset() + (location.columnEnd() - 1);
-//					if (container.getTokenRanges().get(pathName).getFirst().equals(location)) {
-//						textArea.setCaretPosition(startOffset);
-//					}
+		/*
+		Fields
+		 */
+		markField(textArea, classFileContainer, line, column, finalToken, highlighterEx);
 
-						highlighterEx.addMarkedOccurrenceHighlight(startOffset, endOffset,
-								new SmartHighlightPainter());
-					}
-				} catch (BadLocationException ex) {
-					throw new RuntimeException(ex);
-				}
-			}
-		}));
+		/*
+		Method parameters
+		 */
+		markMethodParameter(textArea, classFileContainer, line, column, finalToken, highlighterEx);
 
-		classFileContainer.methodParameterMembers.values().forEach(field -> field.forEach(member -> {
-			String methodOwner;
-			if (member.line() == line && member.columnStart() - 1 <= column && member.columnEnd() >= column) {
-				methodOwner = member.methodOwner();
-				try {
-					Element root = textArea.getDocument().getDefaultRootElement();
-					for (ClassMemberLocation location : classFileContainer.getParameterLocationsFor(finalToken.getLexeme())) {
-						if (Objects.equals(methodOwner, location.methodOwner())) {
-							int startOffset =
-									root.getElement(location.line() - 1).getStartOffset() + (location.columnStart() - 1);
-							int endOffset = root.getElement(location.line() - 1).getStartOffset() + (location.columnEnd() - 1);
+		/*
+		Method local variables
+		 */
+		markMethodLocalVariable(textArea, classFileContainer, line, column, finalToken, highlighterEx);
 
-							highlighterEx.addMarkedOccurrenceHighlight(startOffset, endOffset,
-									new SmartHighlightPainter());
-						}
-					}
-				} catch (BadLocationException ex) {
-					throw new RuntimeException(ex);
-				}
-			}
-		}));
-
-		classFileContainer.methodLocalMembers.values().forEach(field -> field.forEach(member -> {
-			String methodOwner;
-			if (member.line() == line && member.columnStart() - 1 <= column && member.columnEnd() >= column) {
-				methodOwner = member.methodOwner();
-				try {
-					Element root = textArea.getDocument().getDefaultRootElement();
-					for (ClassMemberLocation location : classFileContainer.getLocalLocationsFor(finalToken.getLexeme())) {
-						if (Objects.equals(methodOwner, location.methodOwner())) {
-							int startOffset =
-									root.getElement(location.line() - 1).getStartOffset() + (location.columnStart() - 1);
-							int endOffset = root.getElement(location.line() - 1).getStartOffset() + (location.columnEnd() - 1);
-
-							highlighterEx.addMarkedOccurrenceHighlight(startOffset, endOffset,
-									new SmartHighlightPainter());
-						}
-					}
-				} catch (BadLocationException ex) {
-					throw new RuntimeException(ex);
-				}
-			}
-		}));
-
-		classFileContainer.methodMembers.values().forEach(field -> field.forEach(member -> {
-			String owner;
-			if (member.line() == line && member.columnStart() - 1 <= column && member.columnEnd() >= column) {
-				owner = member.owner();
-				try {
-					Element root = textArea.getDocument().getDefaultRootElement();
-					for (ClassMemberLocation location : classFileContainer.getMethodLocationsFor(finalToken.getLexeme())) {
-						if (Objects.equals(owner, location.owner())) {
-							int startOffset =
-									root.getElement(location.line() - 1).getStartOffset() + (location.columnStart() - 1);
-							int endOffset = root.getElement(location.line() - 1).getStartOffset() + (location.columnEnd() - 1);
-
-							highlighterEx.addMarkedOccurrenceHighlight(startOffset, endOffset,
-									new SmartHighlightPainter());
-						}
-					}
-				} catch (BadLocationException ex) {
-					throw new RuntimeException(ex);
-				}
-			}
-		}));
+		/*
+		Methods
+		 */
+		markMethod(textArea, classFileContainer, line, column, finalToken, highlighterEx);
 
 		errorStripe.refreshMarkers();
+	}
+
+	/**
+	 * Search through the text area and mark all occurrences that match the selected token.
+	 *
+	 * @param textArea           the text area
+	 * @param classFileContainer the container
+	 * @param line               the caret line
+	 * @param column             the caret column
+	 * @param finalToken         the token
+	 * @param highlighterEx      the highlighter
+	 */
+	private static void markMethod(
+			@NotNull RSyntaxTextArea textArea,
+			@NotNull ClassFileContainer classFileContainer,
+			int line,
+			int column,
+			Token finalToken,
+			RSyntaxTextAreaHighlighterEx highlighterEx
+	) {
+		classFileContainer.methodMembers.values().forEach(methods -> methods.forEach(method -> {
+			String owner;
+			String parameterTypes;
+			if (method.line() == line && method.columnStart() - 1 <= column && method.columnEnd() >= column) {
+				owner = method.owner();
+				parameterTypes = method.methodParameterTypes();
+				try {
+					Element root = textArea.getDocument().getDefaultRootElement();
+					for (
+							ClassMethodLocation location :
+							classFileContainer.getMethodLocationsFor(finalToken.getLexeme())
+					) {
+						if (Objects.equals(owner, location.owner())
+								&& Objects.equals(parameterTypes, location.methodParameterTypes())
+						) {
+							int startOffset = root
+									.getElement(location.line() - 1)
+									.getStartOffset() + (location.columnStart() - 1);
+							int endOffset = root
+									.getElement(location.line() - 1)
+									.getStartOffset() + (location.columnEnd() - 1);
+							highlighterEx.addMarkedOccurrenceHighlight(
+									startOffset, endOffset, new SmartHighlightPainter()
+							);
+						}
+					}
+				} catch (BadLocationException ex) {
+					throw new RuntimeException(ex);
+				}
+			}
+		}));
+	}
+
+	/**
+	 * Search through the text area and mark all occurrences that match the selected token.
+	 *
+	 * @param textArea           the text area
+	 * @param classFileContainer the container
+	 * @param line               the caret line
+	 * @param column             the caret column
+	 * @param finalToken         the token
+	 * @param highlighterEx      the highlighter
+	 */
+	private static void markMethodLocalVariable(
+			@NotNull RSyntaxTextArea textArea,
+			@NotNull ClassFileContainer classFileContainer,
+			int line,
+			int column,
+			Token finalToken,
+			RSyntaxTextAreaHighlighterEx highlighterEx
+	) {
+		classFileContainer.methodLocalMembers.values().forEach(localVariables -> localVariables.forEach(localVariable -> {
+			String method;
+			if (localVariable.line() == line && localVariable.columnStart() - 1 <= column && localVariable.columnEnd() >= column) {
+				method = localVariable.method();
+				try {
+					Element root = textArea.getDocument().getDefaultRootElement();
+					for (
+							ClassLocalVariableLocation location :
+							classFileContainer.getLocalLocationsFor(finalToken.getLexeme())
+					) {
+						if (Objects.equals(method, location.method())) {
+							int startOffset = root
+									.getElement(location.line() - 1)
+									.getStartOffset() + (location.columnStart() - 1);
+							int endOffset = root
+									.getElement(location.line() - 1)
+									.getStartOffset() + (location.columnEnd() - 1);
+
+							highlighterEx.addMarkedOccurrenceHighlight(
+									startOffset, endOffset, new SmartHighlightPainter()
+							);
+						}
+					}
+				} catch (BadLocationException ex) {
+					throw new RuntimeException(ex);
+				}
+			}
+		}));
+	}
+
+	/**
+	 * Search through the text area and mark all occurrences that match the selected token.
+	 *
+	 * @param textArea           the text area
+	 * @param classFileContainer the container
+	 * @param line               the caret line
+	 * @param column             the caret column
+	 * @param finalToken         the token
+	 * @param highlighterEx      the highlighter
+	 */
+	private static void markMethodParameter(
+			@NotNull RSyntaxTextArea textArea,
+			@NotNull ClassFileContainer classFileContainer,
+			int line,
+			int column,
+			Token finalToken,
+			RSyntaxTextAreaHighlighterEx highlighterEx
+	) {
+		classFileContainer.methodParameterMembers.values().forEach(parameters -> parameters.forEach(parameter -> {
+			String method;
+			if (parameter.line() == line && parameter.columnStart() - 1 <= column && parameter.columnEnd() >= column) {
+				method = parameter.method();
+				try {
+					Element root = textArea.getDocument().getDefaultRootElement();
+					for (
+							ClassParameterLocation location :
+							classFileContainer.getParameterLocationsFor(finalToken.getLexeme())
+					) {
+						if (Objects.equals(method, location.method())) {
+							int startOffset = root
+									.getElement(location.line() - 1)
+									.getStartOffset() + (location.columnStart() - 1);
+							int endOffset = root
+									.getElement(location.line() - 1)
+									.getStartOffset() + (location.columnEnd() - 1);
+
+							highlighterEx.addMarkedOccurrenceHighlight(
+									startOffset, endOffset, new SmartHighlightPainter()
+							);
+						}
+					}
+				} catch (BadLocationException ex) {
+					throw new RuntimeException(ex);
+				}
+			}
+		}));
+	}
+
+	/**
+	 * Search through the text area and mark all occurrences that match the selected token.
+	 *
+	 * @param textArea           the text area
+	 * @param classFileContainer the container
+	 * @param line               the caret line
+	 * @param column             the caret column
+	 * @param finalToken         the token
+	 * @param highlighterEx      the highlighter
+	 */
+	private static void markField(
+			@NotNull RSyntaxTextArea textArea,
+			@NotNull ClassFileContainer classFileContainer,
+			int line,
+			int column,
+			Token finalToken,
+			RSyntaxTextAreaHighlighterEx highlighterEx
+	) {
+		classFileContainer.fieldMembers.values().forEach(fields -> fields.forEach(field -> {
+			String owner;
+			if (field.line() == line && field.columnStart() - 1 <= column && field.columnEnd() >= column) {
+				owner = field.owner();
+				try {
+					Element root = textArea.getDocument().getDefaultRootElement();
+					for (
+							ClassFieldLocation location :
+							classFileContainer.getMemberLocationsFor(finalToken.getLexeme())
+					) {
+						if (Objects.equals(owner, location.owner())) {
+							int startOffset = root
+									.getElement(location.line() - 1)
+									.getStartOffset() + (location.columnStart() - 1);
+							int endOffset = root
+									.getElement(location.line() - 1)
+									.getStartOffset() + (location.columnEnd() - 1);
+							highlighterEx.addMarkedOccurrenceHighlight(
+									startOffset, endOffset, new SmartHighlightPainter()
+							);
+						}
+					}
+				} catch (BadLocationException ex) {
+					throw new RuntimeException(ex);
+				}
+			}
+		}));
 	}
 }

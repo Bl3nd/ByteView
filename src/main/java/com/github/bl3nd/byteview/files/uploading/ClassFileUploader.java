@@ -44,8 +44,8 @@ public class ClassFileUploader implements FileUploader {
 
 	public void upload() {
 		try {
-			ClassFileContainer container = new ClassFileContainer(file);
 			if (!ByteView.mainFrame.resourcePane.files.contains(file)) {
+				ClassFileContainer container = new ClassFileContainer(file);
 				ByteView.mainFrame.resourcePane.files.add(file);
 				SwingUtilities.invokeLater(() -> ByteView.mainFrame.resourcePane.addResource(container));
 			}

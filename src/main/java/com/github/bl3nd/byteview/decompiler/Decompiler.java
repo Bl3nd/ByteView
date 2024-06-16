@@ -34,11 +34,25 @@ import com.github.bl3nd.byteview.files.FileContainer;
 public abstract class Decompiler {
 	public final FileContainer fileContainer;
 	public final String fileName;
+
+	/**
+	 * A decompiler
+	 *
+	 * @param container the container to decompile
+	 * @param fileName  the container's file name
+	 */
 	public Decompiler(final FileContainer container, final String fileName) {
 		this.fileName = fileName;
 		this.fileContainer = container;
 	}
 
+	/**
+	 * Get the decompiler from the user's configuration
+	 *
+	 * @param currentDecompiler the user's current decompiler
+	 * @param container the container to decompile
+	 * @return the decompiler
+	 */
 	public static Decompiler getDecompiler(String currentDecompiler, FileContainer container) {
 		if (currentDecompiler == null || currentDecompiler.equalsIgnoreCase("none")) {
 			return null;
@@ -53,11 +67,15 @@ public abstract class Decompiler {
 
 	public abstract String decompile(byte[] bytes);
 
+	/**
+	 * The type of decompilers implemented. Used mainly for the decompiler dialog.
+	 */
 	public enum Types {
 		None("none"),
 		VineFlower("VineFlower");
 
 		final String name;
+
 		Types(String name) {
 			this.name = name;
 		}

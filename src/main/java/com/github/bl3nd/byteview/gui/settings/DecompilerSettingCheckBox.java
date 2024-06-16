@@ -46,6 +46,8 @@ public class DecompilerSettingCheckBox extends JCheckBox {
 
 	private void updateCheckbox(@NotNull ActionEvent event) {
 		JCheckBox checkBox = (JCheckBox) event.getSource();
+		// TODO: Either find a way to make this check box more generalized for any decompiler or create individual
+		//  decompiler checkboxes
 		VineFlowerSettingPanel.settingChanges.put(setting, checkBox.isSelected());
 	}
 }

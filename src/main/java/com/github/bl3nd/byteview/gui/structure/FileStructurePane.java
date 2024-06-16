@@ -34,7 +34,7 @@ import com.github.bl3nd.byteview.gui.resourceviewer.component.RSyntaxTextAreaHig
 import com.github.bl3nd.byteview.gui.resourceviewer.pages.ClassResourcePage;
 import com.github.bl3nd.byteview.gui.resourceviewer.pages.Page;
 import com.github.bl3nd.byteview.gui.structure.components.FileStructureTreeCellRenderer;
-import com.github.bl3nd.byteview.misc.ClassMemberLocation;
+import com.github.bl3nd.byteview.location.ClassFieldLocation;
 import org.fife.ui.rtextarea.SmartHighlightPainter;
 import org.jetbrains.annotations.NotNull;
 
@@ -80,8 +80,10 @@ public class FileStructurePane extends JPanel {
 					}
 
 					// Clicked on valid item bounds
-					ClassResourcePage page = (ClassResourcePage) ByteView.mainFrame.resourceViewerPane.getTabbedPane().getSelectedComponent();
-					RSyntaxTextAreaHighlighterEx highlighterEx = (RSyntaxTextAreaHighlighterEx) page.getTextArea().getHighlighter();
+					ClassResourcePage page =
+							(ClassResourcePage) ByteView.mainFrame.resourceViewerPane.getTabbedPane().getSelectedComponent();
+					RSyntaxTextAreaHighlighterEx highlighterEx =
+							(RSyntaxTextAreaHighlighterEx) page.getTextArea().getHighlighter();
 					if (bounds.contains(e.getX(), e.getY()) || e.getY() >= bounds.y && e.getY() < bounds.y + bounds.height && (e.getX() < bounds.x || e.getX() > bounds.x + bounds.width)) {
 						String pathName = path.getLastPathComponent().toString();
 						pathName = pathName.substring(0, pathName.indexOf(":")).trim();
@@ -89,17 +91,24 @@ public class FileStructurePane extends JPanel {
 						page.getTextArea().getHighlighter().removeAllHighlights();
 						Element root = page.getTextArea().getDocument().getDefaultRootElement();
 						String finalPathName = pathName;
+
+						/*
+						Fields
+						 */
 						container.fieldMembers.values().forEach(fields -> fields.forEach(_ -> {
-							for (ClassMemberLocation location : container.getMemberLocationsFor(finalPathName)) {
+							for (ClassFieldLocation location : container.getMemberLocationsFor(finalPathName)) {
 								if (location.decRef().equalsIgnoreCase("declaration")) {
-									int startOffset =
-											root.getElement(location.line() - 1).getStartOffset() + (location.columnStart() - 1);
-									int endOffset =
-											root.getElement(location.line() - 1).getStartOffset() + (location.columnEnd() - 1);
+									int startOffset = root
+											.getElement(location.line() - 1)
+											.getStartOffset() + (location.columnStart() - 1);
+									int endOffset = root
+											.getElement(location.line() - 1)
+											.getStartOffset() + (location.columnEnd() - 1);
 
 									try {
-										highlighterEx.addMarkedOccurrenceHighlight(startOffset, endOffset,
-												new SmartHighlightPainter());
+										highlighterEx.addMarkedOccurrenceHighlight(
+												startOffset, endOffset, new SmartHighlightPainter()
+										);
 										page.getTextArea().setCaretPosition(startOffset);
 										page.markOccurrences(page.getTextArea(), container);
 									} catch (BadLocationException ex) {
@@ -109,10 +118,12 @@ public class FileStructurePane extends JPanel {
 							}
 						}));
 						/*try {
-							for (ClassMemberLocation location : container.getTokenRanges().get(pathName)) {
+							for (ClassFieldLocation location : container.getTokenRanges().get(pathName)) {
 								int startOffset =
-										root.getElement(location.line() - 1).getStartOffset() + (location.columnStart() - 1);
-								int endOffset = root.getElement(location.line() - 1).getStartOffset() + (location.columnEnd());
+										root.getElement(location.line() - 1).getStartOffset() + (location.columnStart
+										() - 1);
+								int endOffset = root.getElement(location.line() - 1).getStartOffset() + (location
+								.columnEnd());
 								if (container.getTokenRanges().get(pathName).getFirst().equals(location)) {
 									page.getTextArea().setCaretPosition(startOffset);
 								}
@@ -133,6 +144,11 @@ public class FileStructurePane extends JPanel {
 		add(headerPanel, BorderLayout.CENTER);
 	}
 
+	/**
+	 * Shows this container's structure (should really only be used for containers that actually do have a structure).
+	 *
+	 * @param container the container to show
+	 */
 	public void showContainerStructure(FileContainer container) {
 		if (container == openedContainer) {
 			return;
@@ -151,9 +167,22 @@ public class FileStructurePane extends JPanel {
 		root.removeAllChildren();
 		root.removeFromParent();
 		tree.removeAll();
-		Component component = ByteView.mainFrame.resourceViewerPane.getTabbedPane().getSelectedComponent();
-		this.openedContainer = !ByteView.mainFrame.resourceViewerPane.getPages().isEmpty() ? ((Page) component).getFileContainer() : null;
+		this.openedContainer = null;
 		tree.updateUI();
+	}
+
+	/**
+	 * When a user closes a tab, if the tab is not selected, then let the tabbed pane just close that tab and still
+	 * allow the current selected container show its structure. If the tab is selected, and there is no more pages,
+	 * we can close any structure currently shown.
+	 */
+	public void removeContainerStructure() {
+		Component component = ByteView.mainFrame.resourceViewerPane.getTabbedPane().getSelectedComponent();
+		if (!ByteView.mainFrame.resourceViewerPane.getPages().isEmpty()) {
+			this.openedContainer = ((Page) component).getFileContainer();
+		} else {
+			hideContainerStructure();
+		}
 	}
 
 	private void createTree(MyTreeNode node, @NotNull FileContainer container) {

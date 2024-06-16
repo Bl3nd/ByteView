@@ -44,7 +44,15 @@ public class FileStructureTreeCellRenderer extends DefaultTreeCellRenderer {
 	private final Map<MyTreeNode, Icon> iconMap = new HashMap<>();
 
 	@Override
-	public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus) {
+	public Component getTreeCellRendererComponent(
+			JTree tree,
+			Object value,
+			boolean sel,
+			boolean expanded,
+			boolean leaf,
+			int row,
+			boolean hasFocus
+	) {
 		Component comp = super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
 		if (value instanceof MyTreeNode node) {
 			if (iconMap.containsKey(value)) {
@@ -73,6 +81,7 @@ public class FileStructureTreeCellRenderer extends DefaultTreeCellRenderer {
 				}
 			}
 		}
+
 		return comp;
 	}
 }

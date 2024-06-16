@@ -26,7 +26,6 @@ package com.github.bl3nd.byteview.gui.resourceviewer;
 
 import com.formdev.flatlaf.FlatClientProperties;
 import com.github.bl3nd.byteview.ByteView;
-import com.github.bl3nd.byteview.gui.resourceviewer.pages.ClassResourcePage;
 import com.github.bl3nd.byteview.gui.resourceviewer.pages.Page;
 import com.github.bl3nd.byteview.misc.Icons;
 import org.jetbrains.annotations.NotNull;
@@ -50,23 +49,27 @@ public class ResourceViewerPane extends JPanel {
 		tabbedPane = new JTabbedPane(SwingConstants.TOP, JTabbedPane.SCROLL_TAB_LAYOUT);
 		tabbedPane.addChangeListener(e -> {
 			JTabbedPane pane = (JTabbedPane) e.getSource();
-			Component c = pane.getSelectedComponent();
-			if (c instanceof ClassResourcePage classPage) {
-				if (ByteView.mainFrame.fileStructurePane.openedContainer.equals(classPage.getFileContainer())) {
-					return;
-				}
-
-				ByteView.mainFrame.fileStructurePane.showContainerStructure(classPage.getFileContainer());
+			Page page = (Page) pane.getSelectedComponent();
+			if (page == null) {
+				return;
 			}
+
+			if (ByteView.mainFrame.fileStructurePane.openedContainer.equals(page.getFileContainer())) {
+				return;
+			}
+
+			ByteView.mainFrame.fileStructurePane.showContainerStructure(page.getFileContainer());
 		});
 
 		tabbedPane.putClientProperty(FlatClientProperties.TABBED_PANE_TAB_CLOSABLE, true);
 		tabbedPane.putClientProperty(FlatClientProperties.TABBED_PANE_TAB_CLOSE_TOOLTIPTEXT, "Close");
-		tabbedPane.putClientProperty(FlatClientProperties.TABBED_PANE_TAB_CLOSE_CALLBACK, (BiConsumer<JTabbedPane, Integer>) (tabPane, tabIndex) -> {
-			pages.remove(tabPane.getTitleAt(tabIndex));
-			ByteView.mainFrame.fileStructurePane.hideContainerStructure();
-			tabPane.removeTabAt(tabIndex);
-		});
+		tabbedPane.putClientProperty(FlatClientProperties.TABBED_PANE_TAB_CLOSE_CALLBACK,
+				(BiConsumer<JTabbedPane, Integer>) (tabPane, tabIndex) -> {
+					pages.remove(tabPane.getTitleAt(tabIndex));
+					ByteView.mainFrame.fileStructurePane.removeContainerStructure();
+					tabPane.removeTabAt(tabIndex);
+				}
+		);
 
 		add(tabbedPane, BorderLayout.CENTER);
 		setVisible(true);

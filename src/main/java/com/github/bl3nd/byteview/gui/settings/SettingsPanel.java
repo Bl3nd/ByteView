@@ -37,6 +37,8 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
 /**
+ * Settings panel (Tree & Individual setting page)
+ * <p>
  * Created by Bl3nd.
  * Date: 5/26/2024
  */
