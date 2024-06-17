@@ -25,6 +25,7 @@
 package com.github.bl3nd.byteview.gui.resourceviewer.pages;
 
 import com.github.bl3nd.byteview.ByteView;
+import com.github.bl3nd.byteview.actions.GoToAction;
 import com.github.bl3nd.byteview.files.ClassFileContainer;
 import com.github.bl3nd.byteview.gui.components.MyErrorStripe;
 import com.github.bl3nd.byteview.gui.resourceviewer.component.RSyntaxTextAreaHighlighterEx;
@@ -95,111 +96,9 @@ public class ClassResourcePage extends Page {
 
 		/*
 		This action goes to a members declaration.
-		TODO: Possibly add this in its own Action class to de-clutter this file.
 		 */
 		textArea.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_B, InputEvent.CTRL_DOWN_MASK), "goToAction");
-		textArea.getActionMap().put("goToAction", new AbstractAction() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				RSyntaxTextArea textArea = (RSyntaxTextArea) e.getSource();
-				Token token = textArea.modelToToken(textArea.getCaretPosition() - 1);
-				if (token == null) {
-					return;
-				}
-
-				token = token.getLexeme().isBlank()
-						|| Objects.equals(token.getLexeme(), ".")
-						|| Objects.equals(token.getLexeme(), "(")
-						|| Objects.equals(token.getLexeme(), "[")
-						|| Objects.equals(token.getLexeme(), "~")
-						|| Objects.equals(token.getLexeme(), "-")
-						|| Objects.equals(token.getLexeme(), "+")
-						? textArea.modelToToken(textArea.getCaretPosition())
-						: token;
-
-				int line = textArea.getCaretLineNumber() + 1;
-				int column = textArea.getCaretOffsetFromLineStart();
-
-				/*
-				Fields
-				 */
-				classFileContainer.fieldMembers.values().forEach(fields -> fields.forEach(field -> {
-					if (field.line() == line && field.columnStart() - 1 <= column && field.columnEnd() >= column) {
-						Element root = textArea.getDocument().getDefaultRootElement();
-						ClassFieldLocation first = fields.getFirst();
-						int startOffset = root
-								.getElement(first.line() - 1)
-								.getStartOffset() + (first.columnStart() - 1);
-						textArea.setCaretPosition(startOffset);
-					}
-				}));
-
-				/*
-				Methods
-				 */
-				Token finalToken = token;
-				classFileContainer.methodMembers.values().forEach(methods -> methods.forEach(method -> {
-					if (method.line() == line && method.columnStart() - 1 <= column && method.columnEnd() >= column) {
-						Element root = textArea.getDocument().getDefaultRootElement();
-						for (
-								ClassMethodLocation location
-								: classFileContainer.getMethodLocationsFor(finalToken.getLexeme())
-						) {
-							if (!Objects.equals(method.owner(), location.owner())) {
-								continue;
-							}
-
-							if (!Objects.equals(method.methodParameterTypes(), location.methodParameterTypes())) {
-								continue;
-							}
-
-							if (location.decRef().equalsIgnoreCase("declaration")) {
-								int startOffset = root
-										.getElement(location.line() - 1)
-										.getStartOffset() + (location.columnStart() - 1);
-								textArea.setCaretPosition(startOffset);
-							}
-						}
-					}
-				}));
-
-				/*
-				Method parameters
-				 */
-				classFileContainer.methodParameterMembers.values().forEach(parameters -> parameters.forEach(parameter -> {
-					if (parameter.line() == line && parameter.columnStart() - 1 <= column && parameter.columnEnd() >= column) {
-						Element root = textArea.getDocument().getDefaultRootElement();
-						ClassParameterLocation first = parameters.getFirst();
-						if (!Objects.equals(parameter.method(), first.method())) {
-							return;
-						}
-
-						int startOffset = root
-								.getElement(first.line() - 1)
-								.getStartOffset() + (first.columnStart() - 1);
-						textArea.setCaretPosition(startOffset);
-					}
-				}));
-
-				/*
-				Method local variables
-				 */
-				classFileContainer.methodLocalMembers.values().forEach(localMembers -> localMembers.forEach(localMember -> {
-					if (localMember.line() == line && localMember.columnStart() - 1 <= column && localMember.columnEnd() >= column) {
-						Element root = textArea.getDocument().getDefaultRootElement();
-						ClassLocalVariableLocation first = localMembers.getFirst();
-						if (!Objects.equals(localMember.method(), first.method())) {
-							return;
-						}
-
-						int startOffset = root
-								.getElement(first.line() - 1)
-								.getStartOffset() + (first.columnStart() - 1);
-						textArea.setCaretPosition(startOffset);
-					}
-				}));
-			}
-		});
+		textArea.getActionMap().put("goToAction", new GoToAction(classFileContainer));
 
 		RTextScrollPane scrollPane = new RTextScrollPane(textArea);
 		add(scrollPane, BorderLayout.CENTER);

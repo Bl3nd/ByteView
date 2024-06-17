@@ -54,7 +54,6 @@ import static com.github.bl3nd.byteview.misc.Constants.TEMP_LOCATION;
  */
 public class VineFlowerDecompiler extends Decompiler {
 	private static final MyLogger LOG = new MyLogger(VineFlowerDecompiler.class.getName());
-	private static final Logger LOGGER = Logger.getLogger(VineFlowerDecompiler.class.getName());
 
 	/**
 	 * Constructor
@@ -65,8 +64,11 @@ public class VineFlowerDecompiler extends Decompiler {
 		super(container, container.getFileName());
 	}
 
+	// TODO: Add option to decompile the entire Zip file so you can get more accurate naming and a foreseeable ability
+	//  to jump between classes when the "goToAction" is triggered.
+
 	/**
-	 * Decompile the container
+	 * Decompile the container. Can only decompile one file at a time.
 	 *
 	 * @param bytes the container's bytes
 	 * @return the decompiled output
@@ -154,7 +156,7 @@ public class VineFlowerDecompiler extends Decompiler {
 			handleMethod(methodString);
 		}
 
-		// TODO: Once all token types are handled, replace this
+		// TODO: Once all token types are handled, remove this
 		if (!strings[2].equalsIgnoreCase("field")) {
 			if (!strings[2].equalsIgnoreCase("parameter")) {
 				if (!strings[2].equalsIgnoreCase("local")) {
@@ -245,8 +247,9 @@ public class VineFlowerDecompiler extends Decompiler {
 
 	/**
 	 * Get the position of the token
+	 *
 	 * @param start the starting line and column
-	 * @param end the ending line and column
+	 * @param end   the ending line and column
 	 * @return the position
 	 */
 	private int @NotNull [] getMemberPosition(@NotNull String start, @NotNull String end) {
@@ -275,8 +278,9 @@ public class VineFlowerDecompiler extends Decompiler {
 
 	/**
 	 * Generate the settings for the VineFlower decompiler
+	 *
 	 * @param className the class to decompile
-	 * @param folder the output folder
+	 * @param folder    the output folder
 	 * @return the settings
 	 */
 	@Contract(value = "_, _ -> new", pure = true)
@@ -344,6 +348,7 @@ public class VineFlowerDecompiler extends Decompiler {
 
 	/**
 	 * Get the user's configuration setting and put into a valid VineFlower setting
+	 *
 	 * @param setting The configuration setting
 	 * @return the valid setting
 	 */
