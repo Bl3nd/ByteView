@@ -26,6 +26,8 @@ package com.github.bl3nd.byteview.gui.resourceviewer;
 
 import com.formdev.flatlaf.FlatClientProperties;
 import com.github.bl3nd.byteview.ByteView;
+import com.github.bl3nd.byteview.files.FileContainer;
+import com.github.bl3nd.byteview.files.ZipFileContainer;
 import com.github.bl3nd.byteview.gui.resourceviewer.pages.Page;
 import com.github.bl3nd.byteview.misc.Icons;
 import org.jetbrains.annotations.NotNull;
@@ -64,15 +66,30 @@ public class ResourceViewerPane extends JPanel {
 		tabbedPane.putClientProperty(FlatClientProperties.TABBED_PANE_TAB_CLOSABLE, true);
 		tabbedPane.putClientProperty(FlatClientProperties.TABBED_PANE_TAB_CLOSE_TOOLTIPTEXT, "Close");
 		tabbedPane.putClientProperty(FlatClientProperties.TABBED_PANE_TAB_CLOSE_CALLBACK,
-				(BiConsumer<JTabbedPane, Integer>) (tabPane, tabIndex) -> {
-					pages.remove(tabPane.getTitleAt(tabIndex));
-					ByteView.mainFrame.fileStructurePane.removeContainerStructure();
-					tabPane.removeTabAt(tabIndex);
-				}
+				(BiConsumer<JTabbedPane, Integer>) this::removeTab
 		);
 
 		add(tabbedPane, BorderLayout.CENTER);
 		setVisible(true);
+	}
+
+	private void removeTab(@NotNull JTabbedPane tabPane, Integer tabIndex) {
+		pages.remove(tabPane.getTitleAt(tabIndex));
+		ByteView.mainFrame.fileStructurePane.removeContainerStructure();
+		tabPane.removeTabAt(tabIndex);
+	}
+
+	public void removeAllTabsRelatedToArchive(FileContainer container) {
+		@SuppressWarnings("unchecked") HashMap<String, Page> copy = (HashMap<String, Page>) pages.clone();
+		copy.forEach((String title, Page page) -> {
+			if (container instanceof ZipFileContainer zip) {
+				zip.fileEntries.forEach((String _, FileContainer fileContainer) -> {
+					if (page.getFileContainer().equals(fileContainer)) {
+						removeTab(tabbedPane, tabbedPane.indexOfTab(title));
+					}
+				});
+			}
+		});
 	}
 
 	public void addPage(@NotNull Page page) {

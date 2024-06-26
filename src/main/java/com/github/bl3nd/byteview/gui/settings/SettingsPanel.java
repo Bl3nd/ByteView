@@ -26,15 +26,16 @@ package com.github.bl3nd.byteview.gui.settings;
 
 import com.github.bl3nd.byteview.gui.components.MyTree;
 import com.github.bl3nd.byteview.gui.components.MyTreeNode;
+import com.github.bl3nd.byteview.gui.settings.panels.GeneralDecompilerPanel;
 import com.github.bl3nd.byteview.gui.settings.panels.GeneralPanel;
 import com.github.bl3nd.byteview.gui.settings.panels.VineFlowerSettingPanel;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
+import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 
 /**
  * Settings panel (Tree & Individual setting page)
@@ -45,7 +46,9 @@ import java.awt.event.MouseEvent;
 public class SettingsPanel extends JPanel {
 	public static JSplitPane splitPane;
 	public static MyTree tree;
-	private TreePath currentPath;
+	private TreePath currentPath = new TreePath(new TreeNode[]{new MyTreeNode("Settings"), new MyTreeNode("General")});
+
+	private static boolean decompileEntireChecked = false;
 
 	public SettingsPanel() {
 		super(new BorderLayout());
@@ -81,7 +84,8 @@ public class SettingsPanel extends JPanel {
 					// Clicked on valid item bounds
 					if (bounds.contains(e.getX(), e.getY()) || e.getY() >= bounds.y && e.getY() < bounds.y + bounds.height && (e.getX() < bounds.x || e.getX() > bounds.x + bounds.width)) {
 						currentPath = path;
-						setSettingPanelForPath(path.getLastPathComponent().toString());
+						setSettingPanelForPath(path.getLastPathComponent().toString(),
+								path.getParentPath().getLastPathComponent().toString());
 					} else { // Click outside valid item bounds
 						tree.setSelectionPath(null);
 						splitPane.setRightComponent(new JPanel());
@@ -90,23 +94,46 @@ public class SettingsPanel extends JPanel {
 			}
 		});
 
+		tree.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyReleased(KeyEvent e) {
+				super.keyReleased(e);
+				TreePath path = tree.getSelectionPath();
+				if (path == null) {
+					return;
+				}
+
+				String settingPath = path.getLastPathComponent().toString();
+				String settingParent = path.getParentPath().getLastPathComponent().toString();
+				currentPath = path;
+				setSettingPanelForPath(settingPath, settingParent);
+			}
+		});
+
 		setVisible(true);
 	}
 
 	public void selectLastPath() {
 		if (currentPath != null) {
-			setSettingPanelForPath(currentPath.getLastPathComponent().toString());
+			setSettingPanelForPath(currentPath.getLastPathComponent().toString(),
+					currentPath.getParentPath().getLastPathComponent().toString());
 		}
 	}
 
-	private void setSettingPanelForPath(@NotNull String path) {
-		if (path.equalsIgnoreCase("General")) {
-			splitPane.setRightComponent(new GeneralPanel());
-		} else if (path.equalsIgnoreCase("VineFlower")) {
-			JScrollPane scrollPane = new JScrollPane(new VineFlowerSettingPanel());
-			scrollPane.getVerticalScrollBar().setUnitIncrement(16);
-			splitPane.setRightComponent(scrollPane);
-		}
+	private void setSettingPanelForPath(@NotNull String path, String parentPath) {
+		SwingUtilities.invokeLater(() -> {
+			if (path.equalsIgnoreCase("General") && parentPath.equalsIgnoreCase("Settings")) {
+				splitPane.setRightComponent(new GeneralPanel());
+			} else if (path.equalsIgnoreCase("Decompilers")) {
+				splitPane.setRightComponent(new JPanel());
+			} else if (path.equalsIgnoreCase("General") && parentPath.equalsIgnoreCase("Decompilers")) {
+				splitPane.setRightComponent(new GeneralDecompilerPanel());
+			} else if (path.equalsIgnoreCase("VineFlower")) {
+				JScrollPane scrollPane = new JScrollPane(new VineFlowerSettingPanel());
+				scrollPane.getVerticalScrollBar().setUnitIncrement(16);
+				splitPane.setRightComponent(scrollPane);
+			}
+		});
 	}
 
 	private void createTree(@NotNull MyTreeNode top) {
@@ -120,6 +147,9 @@ public class SettingsPanel extends JPanel {
 //		category.add(setting);
 
 		category = new MyTreeNode("Decompilers");
+
+		setting = new MyTreeNode("General");
+		category.add(setting);
 
 		setting = new MyTreeNode("VineFlower");
 		category.add(setting);

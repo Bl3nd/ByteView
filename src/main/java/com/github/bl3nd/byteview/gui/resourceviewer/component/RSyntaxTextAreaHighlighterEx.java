@@ -28,6 +28,7 @@ import org.fife.ui.rsyntaxtextarea.RSyntaxTextAreaHighlighter;
 import org.fife.ui.rsyntaxtextarea.parser.ParserNotice;
 import org.fife.ui.rtextarea.SmartHighlightPainter;
 
+import javax.swing.*;
 import javax.swing.plaf.TextUI;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -53,6 +54,7 @@ public class RSyntaxTextAreaHighlighterEx extends RSyntaxTextAreaHighlighter {
 		TextUI mapper = textArea.getUI();
 		// Always layered highlights for marked occurrences.
 		SyntaxLayeredHighlightInfoImpl i = new SyntaxLayeredHighlightInfoImpl();
+		p.setPaint(UIManager.getColor("ScrollBar.thumb"));
 		i.setPainter(p);
 		i.setStartOffset(doc.createPosition(start));
 		// HACK: Use "end-1" to prevent chars the user types at the "end" of

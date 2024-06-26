@@ -67,6 +67,10 @@ public class ClassResourcePage extends Page {
 		textArea.setCursor(new Cursor(Cursor.TEXT_CURSOR));
 		textArea.setHighlighter(new RSyntaxTextAreaHighlighterEx());
 		textArea.setMarkOccurrencesColor(Color.ORANGE);
+		textArea.setBackground(UIManager.getColor("Panel.background"));
+		textArea.setForeground(UIManager.getColor("Label.foreground"));
+		textArea.setAntiAliasingEnabled(true);
+
 		textArea.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {

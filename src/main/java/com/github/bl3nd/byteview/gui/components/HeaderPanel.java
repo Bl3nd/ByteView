@@ -39,6 +39,7 @@ public class HeaderPanel extends JPanel {
 
 	private final String title;
 	private final Icon icon;
+	private final JComponent headerRightComponent;
 	private final Insets insets;
 
 	/**
@@ -48,11 +49,12 @@ public class HeaderPanel extends JPanel {
 	 * @param icon   the header icon
 	 * @param insets the header border insets
 	 */
-	public HeaderPanel(String title, Icon icon, Insets insets) {
+	public HeaderPanel(String title, Icon icon, Insets insets, JComponent headerRightComponent) {
 		super(new BorderLayout());
 		this.title = title;
 		this.icon = icon;
 		this.insets = insets;
+		this.headerRightComponent = headerRightComponent;
 
 		createHeader();
 		createContent();
@@ -77,8 +79,13 @@ public class HeaderPanel extends JPanel {
 		header.add(titleLabel);
 		header.setMinimumSize(new Dimension(50, 10));
 		header.setPreferredSize(new Dimension(50, 32));
-		header.setBorder(new MutableLineBorder(UIManager.getColor("Component.borderColor"), insets.top, insets.left,
-				insets.bottom, insets.right));
+//		header.setBorder(new MutableLineBorder(UIManager.getColor("Component.borderColor"), insets.top, insets.left,
+//				insets.bottom, insets.right));
+
+		if (headerRightComponent != null) {
+			header.add(Box.createHorizontalGlue());
+			header.add(headerRightComponent);
+		}
 	}
 
 	private void createContent() {
@@ -96,8 +103,8 @@ public class HeaderPanel extends JPanel {
 	 * NOTE: Whenever {@code FlatLaf.updateUI()} is called, add this below the call!
 	 */
 	public void resetBorders() {
-		header.setBorder(new MutableLineBorder(UIManager.getColor("Component.borderColor"), insets.top, insets.left,
-				insets.bottom, insets.right));
+//		header.setBorder(new MutableLineBorder(UIManager.getColor("Component.borderColor"), insets.top, insets.left,
+//				insets.bottom, insets.right));
 	}
 
 	@Override

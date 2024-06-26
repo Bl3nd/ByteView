@@ -27,6 +27,7 @@ package com.github.bl3nd.byteview.gui.settings;
 import com.formdev.flatlaf.FlatLaf;
 import com.formdev.flatlaf.util.FontUtils;
 import com.github.bl3nd.byteview.ByteView;
+import com.github.bl3nd.byteview.gui.settings.panels.GeneralDecompilerPanel;
 import com.github.bl3nd.byteview.gui.settings.panels.VineFlowerSettingPanel;
 
 import javax.swing.*;
@@ -41,20 +42,33 @@ import java.util.Objects;
 public class Settings {
 
 	public static boolean changeHierarchySetting = false;
+	public static boolean changeDecompilerSetting = false;
 
 	private static final SettingsPanel settingsPanel = new SettingsPanel();
 
 	public static void openSettingsDialog() {
+		changeDecompilerSetting = ByteView.configuration.getDecompileEntireArchive();
 		settingsPanel.setPreferredSize(new Dimension(600, 400));
 		settingsPanel.selectLastPath();
 		int i = JOptionPane.showConfirmDialog(ByteView.mainFrame, settingsPanel, "Settings",
 				JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
 		checkFontChange(i);
 		checkHierarchyChange(i);
+		updateDecompiler(i);
+		updateDecompileEntireArchive(i);
 
 		if (i == JOptionPane.OK_OPTION) {
 			updateVineFlowerSettings();
 			ByteView.configuration.read();
+		}
+	}
+
+	private static void updateDecompileEntireArchive(int option) {
+		if (option == JOptionPane.OK_OPTION) {
+			if (ByteView.configuration.getDecompileEntireArchive() != changeDecompilerSetting) {
+				ByteView.configuration.setDecompileEntireArchive(changeDecompilerSetting);
+				ByteView.mainFrame.resourcePane.decompileEntireCheckbox.setSelected(changeDecompilerSetting);
+			}
 		}
 	}
 
@@ -78,6 +92,14 @@ public class Settings {
 			ByteView.configuration.updateVineFlowerSettings(VineFlowerSettingPanel.settingChanges);
 		} catch (IOException e) {
 			throw new RuntimeException(e);
+		}
+	}
+
+	private static void updateDecompiler(int optionClick) {
+		if (optionClick == JOptionPane.OK_OPTION) {
+			if (changeDecompilerSetting) {
+				ByteView.configuration.setCurrentDecompiler((String) GeneralDecompilerPanel.availableDecompilers.getSelectedItem());
+			}
 		}
 	}
 

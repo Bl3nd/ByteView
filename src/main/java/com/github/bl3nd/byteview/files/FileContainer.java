@@ -40,6 +40,9 @@ public class FileContainer {
 	public MyTreeNode rootNode;
 	public final byte[] bytes;
 	public final String fileName;
+	public String content;
+
+	private String decompilerUsed;
 
 	public FileContainer(byte[] bytes, String fileName) {
 		this.bytes = bytes;
@@ -52,5 +55,21 @@ public class FileContainer {
 
 	public String getFileName() {
 		return fileName;
+	}
+
+	public String getContent() {
+		return content;
+	}
+
+	public void setContent(String content) {
+		this.content = content;
+	}
+
+	public String getDecompilerUsed() {
+		return decompilerUsed;
+	}
+
+	public void setDecompilerUsed(String decompilerUsed) {
+		this.decompilerUsed = decompilerUsed;
 	}
 }

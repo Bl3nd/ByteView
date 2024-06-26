@@ -55,12 +55,12 @@ public class FileStructurePane extends JPanel {
 	public FileContainer openedContainer;
 	public final HeaderPanel headerPanel;
 
-	private final MyTreeNode root = new MyTreeNode(null);
+	private final MyTreeNode root = new MyTreeNode("Structure:");
 	private final MyTree tree = new MyTree(root);
 
 	public FileStructurePane() {
 		super(new BorderLayout());
-		headerPanel = new HeaderPanel("File Structure", null, new Insets(0, 1, 0, 0));
+		headerPanel = new HeaderPanel("File Structure", null, new Insets(0, 1, 0, 0), null);
 		tree.setRootVisible(false);
 		tree.setShowsRootHandles(true);
 		headerPanel.setContent(tree);

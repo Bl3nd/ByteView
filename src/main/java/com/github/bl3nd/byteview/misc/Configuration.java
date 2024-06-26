@@ -33,10 +33,7 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.awt.*;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -56,7 +53,9 @@ public class Configuration {
 	private File recentUploadedDirectory;
 	private String currentFontFamily;
 	private boolean alwaysShowHierarchy = true;
+	private String currentTheme;
 	private String currentDecompiler;
+	private boolean decompileEntireArchive;
 	private final HashMap<String, Boolean> vineFlowerSettings = new HashMap<>();
 
 	/**
@@ -73,7 +72,9 @@ public class Configuration {
 							? recentUploadedDirectory.getAbsolutePath()
 							: System.getProperty("user.home"));
 			rootObject.add("alwaysShowHierarchy", alwaysShowHierarchy);
+			rootObject.add("currentTheme", "light");
 			rootObject.add("currentDecompiler", "none");
+			rootObject.add("decompileEntireArchive", false);
 
 			JsonObject vineFlowerSettings = Json.object();
 			vineFlowerSettings.add("--ascii-strings", false);
@@ -130,6 +131,16 @@ public class Configuration {
 		}
 	}
 
+	public String getTheme() {
+		try {
+			FileReader fileReader = new FileReader(CONFIG_LOCATION);
+			JsonObject root = (JsonObject) Json.parse(fileReader);
+			return currentTheme = root.getString("currentTheme").orElse("Arc");
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
 	/**
 	 * Read the configuration and set any settings needed.
 	 */
@@ -178,6 +189,9 @@ public class Configuration {
 
 			value = rootObject.get("currentDecompiler");
 			currentDecompiler = value.asString();
+
+			value = rootObject.get("decompileEntireArchive");
+			decompileEntireArchive = value.asBoolean();
 
 			value = rootObject.get("VineFlowerSettings");
 			for (String setting : value.asObject().names()) {
@@ -305,7 +319,16 @@ public class Configuration {
 	}
 
 	public boolean hasCurrentDecompiler() {
-		return !currentDecompiler.equals("none");
+		return !currentDecompiler.equalsIgnoreCase("none");
+	}
+
+	public void setDecompileEntireArchive(boolean decompileEntireArchive) {
+		this.decompileEntireArchive = decompileEntireArchive;
+		updateJson("decompileEntireArchive", decompileEntireArchive);
+	}
+
+	public boolean getDecompileEntireArchive() {
+		return decompileEntireArchive;
 	}
 
 	public HashMap<String, Boolean> getVineFlowerSettings() {
@@ -333,5 +356,10 @@ public class Configuration {
 		FileWriter writer = new FileWriter(CONFIG_LOCATION);
 		rootObject.writeTo(writer, WriterConfig.PRETTY_PRINT);
 		writer.close();
+	}
+
+	public void updateCurrentTheme(String currentTheme) {
+		this.currentTheme = currentTheme;
+		updateJson("currentTheme", currentTheme);
 	}
 }

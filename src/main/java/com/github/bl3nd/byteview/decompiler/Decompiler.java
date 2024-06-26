@@ -65,14 +65,15 @@ public abstract class Decompiler {
 		return null;
 	}
 
-	public abstract String decompile(byte[] bytes);
+	public abstract void decompile(byte[] bytes);
 
 	/**
 	 * The type of decompilers implemented. Used mainly for the decompiler dialog.
 	 */
 	public enum Types {
 		None("none"),
-		VineFlower("VineFlower");
+		VineFlower("VineFlower"),
+		;
 
 		final String name;
 

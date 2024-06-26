@@ -41,10 +41,7 @@ import com.github.bl3nd.byteview.misc.Icons;
 import javax.swing.*;
 import javax.swing.tree.TreePath;
 import java.awt.*;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -59,13 +56,20 @@ public class FileResourcePane extends JPanel {
 	public final Map<String, FileContainer> uploadedFiles = new HashMap<>();
 	public final List<File> files = new ArrayList<>();
 
-	private final MyTreeNode root = new MyTreeNode("Uploaded files:");
+	public final MyTreeNode root = new MyTreeNode("Uploaded files:");
 	public final MyTree tree = new MyTree(root);
 	public final HeaderPanel headerPanel;
+	public final JCheckBox decompileEntireCheckbox = new JCheckBox();
 
 	public FileResourcePane() {
 		super(new BorderLayout());
-		headerPanel = new HeaderPanel("Files", Icons.folderIcon, new Insets(0, 0, 0, 1));
+		decompileEntireCheckbox.setSelected(ByteView.configuration.getDecompileEntireArchive());
+		decompileEntireCheckbox.setToolTipText("Decompile entire archive. This helps with naming.");
+		decompileEntireCheckbox.addActionListener(e -> {
+			JCheckBox checkBox = (JCheckBox) e.getSource();
+			ByteView.configuration.setDecompileEntireArchive(checkBox.isSelected());
+		});
+		headerPanel = new HeaderPanel("Files", Icons.folderIcon, new Insets(0, 0, 0, 1), decompileEntireCheckbox);
 		tree.setRootVisible(false);
 		tree.setShowsRootHandles(true);
 		headerPanel.setContent(tree);
@@ -90,8 +94,7 @@ public class FileResourcePane extends JPanel {
 						FileContainer container;
 						String pathName = path.getPathComponent(1).toString();
 						if (pathName.endsWith(".jar")) {
-							ZipFileContainer zipFileContainer =
-									(ZipFileContainer) ByteView.mainFrame.resourcePane.uploadedFiles.get(pathName);
+							ZipFileContainer zipFileContainer = (ZipFileContainer) ByteView.mainFrame.resourcePane.uploadedFiles.get(pathName);
 							pathName = path.getLastPathComponent().toString();
 							if (pathName.endsWith(".class")) {
 								int count = path.getPathCount();
@@ -102,9 +105,7 @@ public class FileResourcePane extends JPanel {
 
 								pathName = s + pathName.substring(0, pathName.indexOf('.'));
 							} else if (pathName.equalsIgnoreCase("manifest")) {
-								pathName = path
-										.getPathComponent(path.getPathCount() - 2)
-										.toString() + "/" + pathName;
+								pathName = path.getPathComponent(path.getPathCount() - 2).toString() + "/" + pathName;
 							}
 
 							container = zipFileContainer.fileEntries.get(pathName);
@@ -124,14 +125,15 @@ public class FileResourcePane extends JPanel {
 									}
 								}
 
-								if (!c.hasBeenDecompiled) {
+								if (!c.hasBeenDecompiled || !c.getDecompilerUsed().equalsIgnoreCase(ByteView.configuration.getCurrentDecompiler())) {
 									Decompiler decompiler = Decompiler.getDecompiler(
 											ByteView.configuration.getCurrentDecompiler(), container
 									);
 									byte[] bytes = c.getBytes();
-									c.parse(decompiler.decompile(bytes));
-									c.setHasBeenDecompiled(true);
+									decompiler.decompile(bytes);
 								}
+
+								c.parse();
 
 								if (!ByteView.configuration.getAlwaysShowHierarchy()) {
 									ByteView.mainFrame.splitPane1.setRightComponent(ByteView.mainFrame.fileStructurePane);
@@ -165,10 +167,10 @@ public class FileResourcePane extends JPanel {
 
 				String pathName = path.getPathComponent(1).toString();
 				int keyCode = KeyEvent.getExtendedKeyCodeForChar(e.getKeyChar());
-				System.err.println(KeyEvent.getExtendedKeyCodeForChar(e.getKeyChar()));
 				if (pathName.endsWith(".jar")) {
 					if (keyCode == 127) { // Delete key
 						root.remove(uploadedFiles.get(pathName).rootNode);
+						ByteView.mainFrame.resourceViewerPane.removeAllTabsRelatedToArchive(uploadedFiles.get(pathName));
 						uploadedFiles.remove(pathName);
 						files.removeIf(file -> file.getName().equals(pathName));
 						SwingUtilities.invokeLater(() -> {
@@ -180,7 +182,7 @@ public class FileResourcePane extends JPanel {
 						//TODO: Expand this node
 					}
 				} else if (pathName.endsWith(".class")) {
-					if (keyCode == 127) { // Delete key
+					/*if (keyCode == 127) { // Delete key
 						root.remove(uploadedFiles.get(pathName).rootNode);
 						uploadedFiles.remove(pathName);
 						files.removeIf(file -> file.getName().equals(pathName));
@@ -189,7 +191,8 @@ public class FileResourcePane extends JPanel {
 							headerPanel.resetBorders();
 							ByteView.mainFrame.fileStructurePane.headerPanel.resetBorders();
 						});
-					} else if (keyCode == 10) { // Enter key
+					} else*/
+					if (keyCode == 10) { // Enter key
 						ClassFileContainer container =
 								(ClassFileContainer) ByteView.mainFrame.resourcePane.uploadedFiles.get(pathName);
 						if (!ByteView.configuration.hasCurrentDecompiler()) {
@@ -204,8 +207,8 @@ public class FileResourcePane extends JPanel {
 									ByteView.configuration.getCurrentDecompiler(), container
 							);
 							byte[] bytes = container.getBytes();
-							container.parse(decompiler.decompile(bytes));
-							container.setHasBeenDecompiled(true);
+							decompiler.decompile(bytes);
+							container.parse();
 						}
 
 						if (!ByteView.configuration.getAlwaysShowHierarchy()) {

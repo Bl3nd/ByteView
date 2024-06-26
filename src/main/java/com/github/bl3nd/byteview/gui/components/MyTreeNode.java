@@ -67,6 +67,11 @@ public class MyTreeNode extends DefaultMutableTreeNode {
 			map.remove(((MyTreeNode) aChild).getUserObject());
 		}
 
+		/*assert aChild != null;
+		if (!aChild.getParent().equals(this)) {
+			aChild = this.getChildByUserObject(((MyTreeNode) aChild.getParent()).getUserObject().toString());
+		}*/
+
 		super.remove(aChild);
 	}
 

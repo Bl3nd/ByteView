@@ -26,6 +26,7 @@ package com.github.bl3nd.byteview;
 
 import com.formdev.flatlaf.FlatLaf;
 import com.formdev.flatlaf.FlatLightLaf;
+import com.formdev.flatlaf.intellijthemes.FlatAllIJThemes;
 import com.github.bl3nd.byteview.gui.ByteViewFrame;
 import com.github.bl3nd.byteview.misc.Configuration;
 
@@ -45,17 +46,37 @@ public class ByteView {
 	public static Configuration configuration;
 
 	public static void main(String[] args) {
+		configuration = new Configuration();
 		FlatLaf.registerCustomDefaultsSource("themes");
-		FlatLightLaf.setup();
+
+		if (new File(CONFIG_LOCATION).exists()) {
+			String currentTheme = configuration.getTheme();
+			if (currentTheme.equalsIgnoreCase("light")) {
+				FlatLightLaf.setup();
+			} else {
+				for (FlatAllIJThemes.FlatIJLookAndFeelInfo info : FlatAllIJThemes.INFOS) {
+					if (info.getName().equals(currentTheme)) {
+						try {
+							UIManager.setLookAndFeel(info.getClassName());
+							break;
+						} catch (ClassNotFoundException | InstantiationException | IllegalAccessException |
+								 UnsupportedLookAndFeelException e) {
+							throw new RuntimeException(e);
+						}
+					}
+				}
+			}
+		}
+
 		setupUISettings();
 
-		configuration = new Configuration();
 		if (new File(CONFIG_LOCATION).exists()) {
 			configuration.read();
 		} else {
 			configuration.buildDocument();
 			configuration.read();
 		}
+
 
 		File temp = new File(TEMP_LOCATION);
 		if (!temp.exists()) {

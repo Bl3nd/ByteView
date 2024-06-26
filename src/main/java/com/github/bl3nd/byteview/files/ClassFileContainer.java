@@ -56,7 +56,6 @@ public class ClassFileContainer extends FileContainer {
 	public transient NavigableMap<String, ArrayList<ClassParameterLocation>> methodParameterMembers = new TreeMap<>();
 	public transient NavigableMap<String, ArrayList<ClassLocalVariableLocation>> methodLocalMembers = new TreeMap<>();
 	public transient NavigableMap<String, ArrayList<ClassMethodLocation>> methodMembers = new TreeMap<>();
-	private String content;
 
 	public ClassFileContainer(final File file) throws IOException {
 		super(FileMisc.readBytes(file), file.getName());
@@ -68,16 +67,15 @@ public class ClassFileContainer extends FileContainer {
 
 	/**
 	 * Parse the Java content using JavaParser. This let us use the parsed Java in the structure pane.
-	 *
-	 * @param content the Java content
 	 */
-	public void parse(String content) {
-		this.content = content;
-
+	public void parse() {
 		// TODO: Sometimes this doesn't work
 		JavaParser parser = new JavaParser();
 		ParseResult<CompilationUnit> result = parser.parse(content);
 		CompilationUnit cu = result.getResult().orElse(null);
+		if (!result.isSuccessful()) {
+			result.getProblems().forEach(problem -> System.err.println(problem.getCause().orElse(null)));
+		}
 		if (cu != null) {
 			NodeList<TypeDeclaration<?>> types = cu.getTypes();
 			types.stream().map(TypeDeclaration::getMembers).forEach(members -> members.forEach(member -> {
@@ -224,10 +222,6 @@ public class ClassFileContainer extends FileContainer {
 				}
 			}
 		}*/
-	}
-
-	public String getContent() {
-		return content;
 	}
 
 	public NavigableMap<String, ArrayList<ClassFieldLocation>> getFieldMembers() {

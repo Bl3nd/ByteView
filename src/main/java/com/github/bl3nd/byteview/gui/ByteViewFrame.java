@@ -24,7 +24,13 @@
 
 package com.github.bl3nd.byteview.gui;
 
+import com.formdev.flatlaf.FlatClientProperties;
+import com.formdev.flatlaf.FlatLaf;
+import com.formdev.flatlaf.extras.FlatAnimatedLafChange;
 import com.formdev.flatlaf.extras.FlatSVGUtils;
+import com.formdev.flatlaf.intellijthemes.FlatAllIJThemes;
+import com.formdev.flatlaf.intellijthemes.FlatAllIJThemes.FlatIJLookAndFeelInfo;
+import com.formdev.flatlaf.ui.FlatButtonBorder;
 import com.github.bl3nd.byteview.ByteView;
 import com.github.bl3nd.byteview.gui.fileviewer.FileResourcePane;
 import com.github.bl3nd.byteview.gui.fileviewer.actions.FileActions;
@@ -35,7 +41,15 @@ import com.github.bl3nd.byteview.misc.Icons;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Created by Bl3nd.
@@ -113,6 +127,103 @@ public class ByteViewFrame extends JFrame {
 		settingsItem.addActionListener(_ -> Settings.openSettingsDialog());
 		viewMenu.add(settingsItem);
 		menuBar.add(viewMenu);
+
+		JPopupMenu popupMenu = new JPopupMenu();
+		JMenuItem settingsPopupItem = new JMenuItem("Settings...", Icons.settingsIcon);
+		settingsPopupItem.addActionListener(_ -> Settings.openSettingsDialog());
+
+		JMenuItem themePopupItem = new JMenuItem("Theme...");
+		themePopupItem.addActionListener(new AbstractAction() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				JPanel panel = new JPanel();
+
+				List<String> themes = new ArrayList<>();
+				for (FlatIJLookAndFeelInfo info : FlatAllIJThemes.INFOS) {
+					themes.add(info.getName());
+				}
+
+				JList<String> themeList = new JList<>();
+				for (FlatIJLookAndFeelInfo info : FlatAllIJThemes.INFOS) {
+					themeList.add(new JLabel(info.getName()));
+				}
+
+				themeList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+				themeList.setLayoutOrientation(JList.VERTICAL);
+				themeList.setModel(new AbstractListModel<>() {
+					@Override
+					public int getSize() {
+						return FlatAllIJThemes.INFOS.length;
+					}
+
+					@Override
+					public String getElementAt(int index) {
+						return themes.get(index);
+					}
+				});
+				themeList.addListSelectionListener(e1 -> {
+					JList<String> list = (JList<String>) e1.getSource();
+					String selectedTheme = list.getSelectedValue();
+					SwingUtilities.invokeLater(() -> setTheme(selectedTheme));
+				});
+
+				JScrollPane scrollPane = new JScrollPane(themeList);
+				panel.add(scrollPane);
+				JOptionPane.showOptionDialog(ByteView.mainFrame, panel, "Themes", JOptionPane.DEFAULT_OPTION, JOptionPane.PLAIN_MESSAGE, null,
+						null, null);
+			}
+		});
+
+		popupMenu.add(settingsPopupItem);
+		popupMenu.add(themePopupItem);
+
+		JButton button = new JButton(Icons.settingsIcon);
+		button.putClientProperty("JButton.buttonType", "toolBarButton");
+		button.putClientProperty(FlatClientProperties.STYLE, "background:$background; toolbar.focusColor:#ffffff;");
+		button.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseEntered(MouseEvent e) {
+				button.putClientProperty(FlatClientProperties.STYLE, "background:#fdfdfd; toolbar.focusColor:#d8d8d8;");
+			}
+
+			@Override
+			public void mouseExited(MouseEvent e) {
+				button.putClientProperty(FlatClientProperties.STYLE, "background:$background; toolbar.focusColor:#ffffff");
+			}
+
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				super.mouseClicked(e);
+				JButton button = (JButton) e.getSource();
+				JMenuBar parent = (JMenuBar) button.getParent();
+				int height = parent.getHeight();
+				popupMenu.show(e.getComponent(), e.getX(), height - 4);
+			}
+		});
+
+
+		menuBar.add(Box.createHorizontalGlue());
+		menuBar.add(button);
+
 		return menuBar;
+	}
+
+	private void setTheme(String selectedTheme) {
+		for (FlatIJLookAndFeelInfo info : FlatAllIJThemes.INFOS) {
+			if (info.getName().equals(selectedTheme)) {
+				try {
+					UIManager.setLookAndFeel(info.getClassName());
+				} catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException e) {
+					throw new RuntimeException(e);
+				}
+
+				FlatLaf.updateUI();
+				ByteView.mainFrame.resourceViewerPane.getPages().forEach((s, page) -> page.getTextArea().setCurrentLineHighlightColor(UIManager.getColor("textHighlight")));
+
+				ByteView.configuration.updateCurrentTheme(selectedTheme);
+				break;
+			}
+		}
+
 	}
 }

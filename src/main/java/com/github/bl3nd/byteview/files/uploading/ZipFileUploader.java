@@ -64,16 +64,15 @@ public class ZipFileUploader implements FileUploader {
 					String entryName = entry.getName();
 					if (entryName.endsWith(".class")) {
 						StringBuilder directory = new StringBuilder();
-						directory.append(Constants.TEMP_LOCATION).append(File.separator);
 						byte[] bytes = FileMisc.readBytes(zis);
 						String[] split = entryName.split("/");
 						String fileName = split[split.length - 1];
-						for (String s : split) {
-							directory.append(s);
+						for (int i = 0; i < split.length - 1; i++) {
+							directory.append(split[i]).append(File.separator);
 						}
 
 						ClassFileContainer classFileContainer = new ClassFileContainer(bytes, fileName);
-						classFileContainer.rootNode = new MyTreeNode(directory);
+						classFileContainer.rootNode = new MyTreeNode(FileMisc.removeExtension(container.fileName) + File.separator + directory);
 						container.fileEntries.put(FileMisc.removeExtension(entryName), classFileContainer);
 					} else if (entryName.endsWith(".MF")) {
 						byte[] bytes = FileMisc.readBytes(zis);

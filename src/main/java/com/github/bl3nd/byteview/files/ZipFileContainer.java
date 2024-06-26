@@ -39,8 +39,10 @@ import java.util.LinkedHashMap;
  */
 public class ZipFileContainer extends FileContainer {
 	public HashMap<String, FileContainer> fileEntries = new LinkedHashMap<>();
+	public final File file;
 
 	public ZipFileContainer(File file) throws IOException {
 		super(FileMisc.readBytes(file), file.getName());
+		this.file = file;
 	}
 }
