@@ -38,15 +38,12 @@ import java.util.List;
  * Date: 6/3/2024
  */
 public class DecompilerDialog {
-
-	/**
-	 * Don't allow initialization
-	 */
 	private DecompilerDialog() {
 	}
 
 	/**
 	 * Opens a confirm dialog, when user does not have a decompiler selected
+	 *
 	 * @return an integer indicating the option the user selected
 	 */
 	public static int open() {
@@ -63,12 +60,13 @@ public class DecompilerDialog {
 		availableCompilers.addActionListener(DecompilerDialog::changeCompiler);
 		panel.add(availableCompilers);
 
-		return JOptionPane.showConfirmDialog(ByteView.mainFrame, panel,
-				"Set a decompiler", JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE);
+		return JOptionPane.showConfirmDialog(ByteView.mainFrame, panel, "Set a decompiler", JOptionPane.OK_CANCEL_OPTION,
+				JOptionPane.WARNING_MESSAGE);
 	}
 
 	/**
 	 * Change the user's current decompiler
+	 *
 	 * @param event The action
 	 */
 	private static void changeCompiler(@NotNull ActionEvent event) {

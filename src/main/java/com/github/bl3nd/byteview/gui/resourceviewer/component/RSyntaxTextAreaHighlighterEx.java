@@ -27,6 +27,7 @@ import org.fife.ui.rsyntaxtextarea.DocumentRange;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextAreaHighlighter;
 import org.fife.ui.rsyntaxtextarea.parser.ParserNotice;
 import org.fife.ui.rtextarea.SmartHighlightPainter;
+import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import javax.swing.plaf.TextUI;
@@ -42,14 +43,10 @@ import java.util.List;
  * Extension from RSyntaxTextArea
  */
 public class RSyntaxTextAreaHighlighterEx extends RSyntaxTextAreaHighlighter {
-	private List<SyntaxLayeredHighlightInfoImpl> markedOccurrences = new ArrayList<>();
+	private final List<SyntaxLayeredHighlightInfoImpl> markedOccurrences = new ArrayList<>();
 	private static final Color DEFAULT_PARSER_NOTICE_COLOR = Color.RED;
 
-	public Object addMarkedOccurrenceHighlight(
-			int start,
-			int end,
-			SmartHighlightPainter p
-	) throws BadLocationException {
+	public Object addMarkedOccurrenceHighlight(int start, int end, @NotNull SmartHighlightPainter p) throws BadLocationException {
 		Document doc = textArea.getDocument();
 		TextUI mapper = textArea.getUI();
 		// Always layered highlights for marked occurrences.
@@ -106,9 +103,7 @@ public class RSyntaxTextAreaHighlighterEx extends RSyntaxTextAreaHighlighter {
 		super.paintLayeredHighlights(g, lineStart, lineEnd, viewBounds, editor, view);
 	}
 
-	private static class SyntaxLayeredHighlightInfoImpl extends
-			LayeredHighlightInfoImpl {
-
+	private static class SyntaxLayeredHighlightInfoImpl extends LayeredHighlightInfoImpl {
 		private ParserNotice notice;
 
 		@Override

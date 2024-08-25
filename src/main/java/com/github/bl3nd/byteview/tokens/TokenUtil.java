@@ -22,20 +22,27 @@
  * SOFTWARE.
  */
 
-package com.github.bl3nd.byteview.location;
+package com.github.bl3nd.byteview.tokens;
 
-import org.jetbrains.annotations.Contract;
+import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
+import org.fife.ui.rsyntaxtextarea.Token;
 import org.jetbrains.annotations.NotNull;
 
 /**
  * Created by Bl3nd.
- * Date: 5/27/2024
+ * Date: 6/29/2024
  */
-public record ClassFieldLocation(String owner, String decRef, int line, int columnStart, int columnEnd) {
-
-	@Contract(pure = true)
-	@Override
-	public @NotNull String toString() {
-		return "owner: " + owner + ", decRef: " + decRef + ", line: " + line + ", columnStart: " + columnStart + ", columnEnd: " + columnEnd;
+public class TokenUtil {
+	public static Token getToken(final RSyntaxTextArea textArea, final @NotNull Token token) {
+		String lexeme = token.getLexeme();
+		return lexeme.isEmpty()
+				|| lexeme.equals(".")
+				|| lexeme.equals("(")
+				|| lexeme.equals("[")
+				|| lexeme.equals("~")
+				|| lexeme.equals("-")
+				|| lexeme.equals("+")
+				? textArea.modelToToken(textArea.getCaretPosition())
+				: token;
 	}
 }

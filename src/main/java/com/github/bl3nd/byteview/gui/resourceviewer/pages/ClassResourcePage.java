@@ -28,11 +28,13 @@ import com.github.bl3nd.byteview.ByteView;
 import com.github.bl3nd.byteview.actions.GoToAction;
 import com.github.bl3nd.byteview.files.ClassFileContainer;
 import com.github.bl3nd.byteview.gui.components.MyErrorStripe;
+import com.github.bl3nd.byteview.gui.components.RequestFocustListener;
 import com.github.bl3nd.byteview.gui.resourceviewer.component.RSyntaxTextAreaHighlighterEx;
-import com.github.bl3nd.byteview.location.ClassFieldLocation;
-import com.github.bl3nd.byteview.location.ClassLocalVariableLocation;
-import com.github.bl3nd.byteview.location.ClassMethodLocation;
-import com.github.bl3nd.byteview.location.ClassParameterLocation;
+import com.github.bl3nd.byteview.tokens.TokenUtil;
+import com.github.bl3nd.byteview.tokens.location.ClassFieldLocation;
+import com.github.bl3nd.byteview.tokens.location.ClassLocalVariableLocation;
+import com.github.bl3nd.byteview.tokens.location.ClassMethodLocation;
+import com.github.bl3nd.byteview.tokens.location.ClassParameterLocation;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
 import org.fife.ui.rsyntaxtextarea.Token;
@@ -41,6 +43,7 @@ import org.fife.ui.rtextarea.SmartHighlightPainter;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
+import javax.swing.event.AncestorListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Element;
 import java.awt.*;
@@ -69,9 +72,12 @@ public class ClassResourcePage extends Page {
 		textArea.setMarkOccurrencesColor(Color.ORANGE);
 		textArea.setBackground(UIManager.getColor("Panel.background"));
 		textArea.setForeground(UIManager.getColor("Label.foreground"));
+		textArea.setCurrentLineHighlightColor(UIManager.getColor("ScrollBar.thumb"));
 		textArea.setAntiAliasingEnabled(true);
 
-		textArea.addMouseListener(new MouseAdapter() {
+		textArea.addAncestorListener(new RequestFocustListener(false));
+
+		/*textArea.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				super.mouseClicked(e);
@@ -83,9 +89,9 @@ public class ClassResourcePage extends Page {
 				highlighterEx.clearMarkOccurrencesHighlights();
 
 				RSyntaxTextArea textArea = (RSyntaxTextArea) e.getSource();
-				markOccurrences(textArea, classFileContainer);
+//				markOccurrences(textArea, classFileContainer);
 			}
-		});
+		});*/
 
 		textArea.addCaretListener(e -> {
 			RSyntaxTextAreaHighlighterEx highlighterEx = (RSyntaxTextAreaHighlighterEx) textArea.getHighlighter();
@@ -128,15 +134,7 @@ public class ClassResourcePage extends Page {
 			return;
 		}
 
-		token = token.getLexeme().isBlank()
-				|| Objects.equals(token.getLexeme(), ".")
-				|| Objects.equals(token.getLexeme(), "(")
-				|| Objects.equals(token.getLexeme(), "[")
-				|| Objects.equals(token.getLexeme(), "~")
-				|| Objects.equals(token.getLexeme(), "-")
-				|| Objects.equals(token.getLexeme(), "+")
-				? textArea.modelToToken(textArea.getCaretPosition())
-				: token;
+		token = TokenUtil.getToken(textArea, token);
 		if (token == null) {
 			highlighterEx.clearMarkOccurrencesHighlights();
 			errorStripe.refreshMarkers();

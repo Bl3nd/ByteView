@@ -22,19 +22,45 @@
  * SOFTWARE.
  */
 
-package com.github.bl3nd.byteview.location;
+package com.github.bl3nd.byteview.gui.components;
 
 import org.jetbrains.annotations.NotNull;
 
+import javax.swing.*;
+import javax.swing.event.AncestorEvent;
+import javax.swing.event.AncestorListener;
+
 /**
  * Created by Bl3nd.
- * Date: 6/15/2024
+ * Date: 6/28/2024
  */
-public record ClassLocalVariableLocation(String owner, String method, String decRef, int line, int columnStart,
-										 int columnEnd) {
+public class RequestFocustListener implements AncestorListener {
+	private boolean removeListener;
+
+	public RequestFocustListener() {
+		this(true);
+	}
+
+	public RequestFocustListener(boolean removeListener) {
+		this.removeListener = removeListener;
+	}
+
 	@Override
-	public @NotNull String toString() {
-		return "owner: " + owner + ", method: " + method + ", decRef: " + decRef + ", line: " + line + ", columnStart" +
-				":" + " " + columnStart + ", columnEnd: " + columnEnd;
+	public void ancestorAdded(@NotNull AncestorEvent event) {
+		JComponent component = event.getComponent();
+		component.requestFocusInWindow();
+		if (removeListener) {
+			component.removeAncestorListener(this);
+		}
+	}
+
+	@Override
+	public void ancestorRemoved(AncestorEvent event) {
+
+	}
+
+	@Override
+	public void ancestorMoved(AncestorEvent event) {
+
 	}
 }

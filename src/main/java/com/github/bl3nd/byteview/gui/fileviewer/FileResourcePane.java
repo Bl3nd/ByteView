@@ -64,7 +64,7 @@ public class FileResourcePane extends JPanel {
 	public FileResourcePane() {
 		super(new BorderLayout());
 		decompileEntireCheckbox.setSelected(ByteView.configuration.getDecompileEntireArchive());
-		decompileEntireCheckbox.setToolTipText("Decompile entire archive. This helps with naming.");
+		decompileEntireCheckbox.setToolTipText("Decompile entire archive. This helps with naming but at a cost of CPU and memory usage!");
 		decompileEntireCheckbox.addActionListener(e -> {
 			JCheckBox checkBox = (JCheckBox) e.getSource();
 			ByteView.configuration.setDecompileEntireArchive(checkBox.isSelected());
@@ -127,13 +127,12 @@ public class FileResourcePane extends JPanel {
 
 								if (!c.hasBeenDecompiled || !c.getDecompilerUsed().equalsIgnoreCase(ByteView.configuration.getCurrentDecompiler())) {
 									Decompiler decompiler = Decompiler.getDecompiler(
-											ByteView.configuration.getCurrentDecompiler(), container
+											ByteView.configuration.getCurrentDecompiler(), c
 									);
 									byte[] bytes = c.getBytes();
 									decompiler.decompile(bytes);
+									c.parse();
 								}
-
-								c.parse();
 
 								if (!ByteView.configuration.getAlwaysShowHierarchy()) {
 									ByteView.mainFrame.splitPane1.setRightComponent(ByteView.mainFrame.fileStructurePane);

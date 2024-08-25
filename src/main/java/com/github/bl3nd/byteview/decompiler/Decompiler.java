@@ -32,7 +32,7 @@ import com.github.bl3nd.byteview.files.FileContainer;
  * Date: 5/22/2024
  */
 public abstract class Decompiler {
-	public final FileContainer fileContainer;
+	public FileContainer fileContainer;
 	public final String fileName;
 
 	/**

@@ -32,6 +32,8 @@ import com.github.bl3nd.byteview.gui.settings.panels.VineFlowerSettingPanel;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
 import java.io.IOException;
 import java.util.Objects;
 
@@ -50,8 +52,9 @@ public class Settings {
 		changeDecompilerSetting = ByteView.configuration.getDecompileEntireArchive();
 		settingsPanel.setPreferredSize(new Dimension(600, 400));
 		settingsPanel.selectLastPath();
-		int i = JOptionPane.showConfirmDialog(ByteView.mainFrame, settingsPanel, "Settings",
-				JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+
+		int i = JOptionPane.showOptionDialog(ByteView.mainFrame, settingsPanel, "Settings",
+				JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null, null, null);
 		checkFontChange(i);
 		checkHierarchyChange(i);
 		updateDecompiler(i);

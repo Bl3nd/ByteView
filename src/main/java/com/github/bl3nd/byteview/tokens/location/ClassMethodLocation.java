@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package com.github.bl3nd.byteview.location;
+package com.github.bl3nd.byteview.tokens.location;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;

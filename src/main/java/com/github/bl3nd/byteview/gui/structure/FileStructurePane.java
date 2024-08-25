@@ -34,7 +34,7 @@ import com.github.bl3nd.byteview.gui.resourceviewer.component.RSyntaxTextAreaHig
 import com.github.bl3nd.byteview.gui.resourceviewer.pages.ClassResourcePage;
 import com.github.bl3nd.byteview.gui.resourceviewer.pages.Page;
 import com.github.bl3nd.byteview.gui.structure.components.FileStructureTreeCellRenderer;
-import com.github.bl3nd.byteview.location.ClassFieldLocation;
+import com.github.bl3nd.byteview.tokens.location.ClassFieldLocation;
 import org.fife.ui.rtextarea.SmartHighlightPainter;
 import org.jetbrains.annotations.NotNull;
 
@@ -117,23 +117,6 @@ public class FileStructurePane extends JPanel {
 								}
 							}
 						}));
-						/*try {
-							for (ClassFieldLocation location : container.getTokenRanges().get(pathName)) {
-								int startOffset =
-										root.getElement(location.line() - 1).getStartOffset() + (location.columnStart
-										() - 1);
-								int endOffset = root.getElement(location.line() - 1).getStartOffset() + (location
-								.columnEnd());
-								if (container.getTokenRanges().get(pathName).getFirst().equals(location)) {
-									page.getTextArea().setCaretPosition(startOffset);
-								}
-
-								page.getTextArea().getHighlighter().addHighlight(startOffset, endOffset,
-										RSyntaxTextAreaHighlighter.DefaultPainter);
-							}
-						} catch (BadLocationException ex) {
-							throw new RuntimeException(ex);
-						}*/
 					} else {
 						page.getTextArea().getHighlighter().removeAllHighlights();
 					}

@@ -94,6 +94,8 @@ public class ResourceViewerPane extends JPanel {
 
 	public void addPage(@NotNull Page page) {
 		if (pages.containsKey(page.getName())) {
+			tabbedPane.setSelectedIndex(tabbedPane.indexOfTab(page.getName()));
+			page.getTextArea().requestFocusInWindow();
 			return;
 		}
 

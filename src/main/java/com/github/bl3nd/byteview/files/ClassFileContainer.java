@@ -24,19 +24,21 @@
 
 package com.github.bl3nd.byteview.files;
 
-import com.github.bl3nd.byteview.location.ClassFieldLocation;
-import com.github.bl3nd.byteview.location.ClassLocalVariableLocation;
-import com.github.bl3nd.byteview.location.ClassMethodLocation;
-import com.github.bl3nd.byteview.location.ClassParameterLocation;
+import com.github.bl3nd.byteview.tokens.location.*;
 import com.github.bl3nd.byteview.misc.FileMisc;
 import com.github.bl3nd.byteview.misc.Icons;
-import com.github.javaparser.JavaParser;
-import com.github.javaparser.ParseResult;
-import com.github.javaparser.TokenRange;
+import com.github.javaparser.*;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.body.*;
+import com.github.javaparser.ast.expr.Expression;
+import com.github.javaparser.ast.expr.UnaryExpr;
+import com.github.javaparser.ast.expr.VariableDeclarationExpr;
+import com.github.javaparser.ast.stmt.BlockStmt;
+import com.github.javaparser.ast.stmt.ExpressionStmt;
+import com.github.javaparser.ast.stmt.Statement;
+import com.github.javaparser.ast.stmt.TryStmt;
 import com.github.javaparser.ast.type.Type;
 import org.jetbrains.annotations.NotNull;
 
@@ -56,6 +58,7 @@ public class ClassFileContainer extends FileContainer {
 	public transient NavigableMap<String, ArrayList<ClassParameterLocation>> methodParameterMembers = new TreeMap<>();
 	public transient NavigableMap<String, ArrayList<ClassLocalVariableLocation>> methodLocalMembers = new TreeMap<>();
 	public transient NavigableMap<String, ArrayList<ClassMethodLocation>> methodMembers = new TreeMap<>();
+	public transient NavigableMap<String, ArrayList<TestParameterLocation>> testParameterMembers = new TreeMap<>();
 
 	public ClassFileContainer(final File file) throws IOException {
 		super(FileMisc.readBytes(file), file.getName());
@@ -126,16 +129,57 @@ public class ClassFileContainer extends FileContainer {
 		String methodType = method.getTypeAsString();
 		String methodName = method.getNameAsString();
 		NodeList<Parameter> parameters = method.getParameters();
+		NodeList<Statement> statements = method.getBody().isPresent() ?
+				method.getBody().get().asBlockStmt().getStatements() : null;
+		/*for (Statement statement : statements) {
+			if (statement instanceof TryStmt tryStmt) {
+				for (Statement tryBlockStatement : tryStmt.getTryBlock().getStatements()) {
+					if (tryBlockStatement instanceof ExpressionStmt expressionStmt) {
+						Expression expression = expressionStmt.getExpression();
+						if (expression instanceof VariableDeclarationExpr variableDeclarationExpr) {
+							for (VariableDeclarator variableDeclarator : variableDeclarationExpr.getVariables()) {
+								String variableName = variableDeclarator.getNameAsString();
+								Optional<Range> tokenRange = variableDeclarator.getRange();
+								int line = tokenRange.map(range -> range.begin.line).orElse(-1);
+								int columnStart = tokenRange.map(range -> range.begin.column).orElse(-1);
+								int columnEnd = tokenRange.map(range -> range.end.column).orElse(-1);
+							}
+						} else if (expression instanceof UnaryExpr unaryExpr) {
+							TokenRange tokenRange = unaryExpr.getTokenRange().orElseThrow();
+							String variableName = tokenRange.getBegin().getText();
+							int line = tokenRange.getBegin().getRange().orElseThrow().begin.line;
+							int columnStart = tokenRange.getBegin().getRange().orElseThrow().begin.column;
+							int columnEnd = tokenRange.getBegin().getRange().orElseThrow().end.column;
+						}
+					}
+				}
+			}
+		}*/
+
 		List<String> parameterTypeList = new ArrayList<>();
 		for (Iterator<Parameter> it = parameters.stream().iterator(); it.hasNext(); ) {
 			Parameter parameter = it.next();
 			String type = parameter.getTypeAsString();
 			parameterTypeList.add(type);
+			Optional<Range> tokenRange = parameter.getTokenRange().isPresent() ?
+					parameter.getTokenRange().get().toRange() : Optional.empty();
+			int line = tokenRange.map(range -> range.begin.line).orElse(-1);
+			int columnStart = tokenRange.map(range -> range.begin.column).orElse(-1);
+			int columnEnd = tokenRange.map(range -> range.end.column).orElse(-1);
+
+			putTestParameter(parameter.getNameAsString(), new TestParameterLocation(method, true,
+					line,
+					columnStart,
+					columnEnd));
 		}
 
 		String parameterTypeString = parameterTypeList.toString().substring(1,
 				parameterTypeList.toString().length() - 1);
 		return methodName + "(" + parameterTypeString + "): " + methodType;
+	}
+
+	private void putTestParameter(String key, TestParameterLocation value) {
+		this.testParameterMembers.computeIfAbsent(key, _ -> new ArrayList<>()).add(value);
 	}
 
 	/**

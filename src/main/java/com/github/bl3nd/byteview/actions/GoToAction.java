@@ -25,10 +25,11 @@
 package com.github.bl3nd.byteview.actions;
 
 import com.github.bl3nd.byteview.files.ClassFileContainer;
-import com.github.bl3nd.byteview.location.ClassFieldLocation;
-import com.github.bl3nd.byteview.location.ClassLocalVariableLocation;
-import com.github.bl3nd.byteview.location.ClassMethodLocation;
-import com.github.bl3nd.byteview.location.ClassParameterLocation;
+import com.github.bl3nd.byteview.tokens.TokenUtil;
+import com.github.bl3nd.byteview.tokens.location.ClassFieldLocation;
+import com.github.bl3nd.byteview.tokens.location.ClassLocalVariableLocation;
+import com.github.bl3nd.byteview.tokens.location.ClassMethodLocation;
+import com.github.bl3nd.byteview.tokens.location.ClassParameterLocation;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import org.fife.ui.rsyntaxtextarea.Token;
 import org.jetbrains.annotations.NotNull;
@@ -59,22 +60,11 @@ public class GoToAction extends AbstractAction {
 			return;
 		}
 
-		token = token.getLexeme().isBlank()
-				|| Objects.equals(token.getLexeme(), ".")
-				|| Objects.equals(token.getLexeme(), "(")
-				|| Objects.equals(token.getLexeme(), "[")
-				|| Objects.equals(token.getLexeme(), "~")
-				|| Objects.equals(token.getLexeme(), "-")
-				|| Objects.equals(token.getLexeme(), "+")
-				? textArea.modelToToken(textArea.getCaretPosition())
-				: token;
-
+		token = TokenUtil.getToken(textArea, token);
 		int line = textArea.getCaretLineNumber() + 1;
 		int column = textArea.getCaretOffsetFromLineStart();
 
-		/*
-			Fields
-		 */
+		// Fields
 		container.fieldMembers.values().forEach(fields -> fields.forEach(field -> {
 			if (field.line() == line && field.columnStart() - 1 <= column && field.columnEnd() >= column) {
 				Element root = textArea.getDocument().getDefaultRootElement();
@@ -84,9 +74,7 @@ public class GoToAction extends AbstractAction {
 			}
 		}));
 
-		/*
-			Methods
-		 */
+		// Methods
 		Token finalToken = token;
 		container.methodMembers.values().forEach(methods -> methods.forEach(method -> {
 			if (method.line() == line && method.columnStart() - 1 <= column && method.columnEnd() >= column) {
@@ -101,18 +89,14 @@ public class GoToAction extends AbstractAction {
 					}
 
 					if (location.decRef().equalsIgnoreCase("declaration")) {
-						int startOffset = root
-								.getElement(location.line() - 1)
-								.getStartOffset() + (location.columnStart() - 1);
+						int startOffset = root.getElement(location.line() - 1).getStartOffset() + (location.columnStart() - 1);
 						textArea.setCaretPosition(startOffset);
 					}
 				}
 			}
 		}));
 
-		/*
-			Method parameters
-		 */
+		// Method parameters
 		container.methodParameterMembers.values().forEach(parameters -> parameters.forEach(parameter -> {
 			if (parameter.line() == line && parameter.columnStart() - 1 <= column && parameter.columnEnd() >= column) {
 				Element root = textArea.getDocument().getDefaultRootElement();
@@ -126,9 +110,7 @@ public class GoToAction extends AbstractAction {
 			}
 		}));
 
-		/*
-			Method local variables
-		 */
+		// Method local variables
 		container.methodLocalMembers.values().forEach(localMembers -> localMembers.forEach(localMember -> {
 			if (localMember.line() == line && localMember.columnStart() - 1 <= column && localMember.columnEnd() >= column) {
 				Element root = textArea.getDocument().getDefaultRootElement();

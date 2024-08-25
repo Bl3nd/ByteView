@@ -66,20 +66,18 @@ public class ByteView {
 					}
 				}
 			}
-		}
 
-		setupUISettings();
-
-		if (new File(CONFIG_LOCATION).exists()) {
 			configuration.read();
 		} else {
 			configuration.buildDocument();
 			configuration.read();
 		}
 
+		setupUISettings();
 
 		File temp = new File(TEMP_LOCATION);
 		if (!temp.exists()) {
+			//noinspection ResultOfMethodCallIgnored
 			temp.mkdirs();
 		}
 
@@ -100,11 +98,5 @@ public class ByteView {
 		UIManager.put("SplitPaneDivider.gripDotCount", 0);
 		UIManager.put("Tree.selectionArc", 5);
 		UIManager.put("Tree.selectionInsets", new Insets(0, 2, 0, 2));
-	}
-
-	public static void updateUIComponents() {
-		for (Window w : Window.getWindows()) {
-			SwingUtilities.updateComponentTreeUI(w);
-		}
 	}
 }

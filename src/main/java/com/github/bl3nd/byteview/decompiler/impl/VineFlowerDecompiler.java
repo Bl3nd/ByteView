@@ -30,10 +30,7 @@ import com.github.bl3nd.byteview.files.ClassFileContainer;
 import com.github.bl3nd.byteview.files.FileContainer;
 import com.github.bl3nd.byteview.files.ZipFileContainer;
 import com.github.bl3nd.byteview.gui.components.MyTreeNode;
-import com.github.bl3nd.byteview.location.ClassFieldLocation;
-import com.github.bl3nd.byteview.location.ClassLocalVariableLocation;
-import com.github.bl3nd.byteview.location.ClassMethodLocation;
-import com.github.bl3nd.byteview.location.ClassParameterLocation;
+import com.github.bl3nd.byteview.tokens.location.*;
 import com.github.bl3nd.byteview.misc.Constants;
 import com.github.bl3nd.byteview.misc.FileMisc;
 import org.jetbrains.annotations.NotNull;
@@ -44,7 +41,6 @@ import org.jetbrains.java.decompiler.main.extern.IFernflowerLogger;
 import org.jetbrains.java.decompiler.main.extern.IResultSaver;
 
 import javax.swing.*;
-import java.awt.*;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -141,7 +137,8 @@ public class VineFlowerDecompiler extends Decompiler implements IResultSaver, Au
 		if (this.fileContainer.rootNode.getUserObject().toString().contains(File.separator)) {
 			root = new File(TEMP_LOCATION + File.separator + this.fileContainer.rootNode.getUserObject().toString());
 			if (!root.exists()) {
-				boolean flag = root.mkdirs();
+				//noinspection ResultOfMethodCallIgnored
+				root.mkdirs();
 			}
 
 			tempFile = new File(root + File.separator + fileName);
@@ -151,7 +148,8 @@ public class VineFlowerDecompiler extends Decompiler implements IResultSaver, Au
 
 		if (!tempFile.exists()) {
 			try {
-				boolean newFile = tempFile.createNewFile();
+				//noinspection ResultOfMethodCallIgnored
+				tempFile.createNewFile();
 			} catch (IOException e) {
 				throw new RuntimeException(e);
 			}
@@ -173,8 +171,10 @@ public class VineFlowerDecompiler extends Decompiler implements IResultSaver, Au
 		}
 
 		engine.addSource(tempFile);
+
 		this.decompileContext();
 
+		//noinspection ResultOfMethodCallIgnored
 		tempFile.delete();
 
 		String fileName = this.qualifiedName;
@@ -195,7 +195,8 @@ public class VineFlowerDecompiler extends Decompiler implements IResultSaver, Au
 				throw new RuntimeException(e);
 			}
 
-			boolean deletedOutput = output.delete();
+			//noinspection ResultOfMethodCallIgnored
+			output.delete();
 
 			if (root != null) {
 				deleteDirectory(TEMP_LOCATION.toFile());
@@ -208,9 +209,8 @@ public class VineFlowerDecompiler extends Decompiler implements IResultSaver, Au
 			this.fileContainer.setDecompilerUsed("VineFlower");
 
 			if (ByteView.configuration.getDecompileEntireArchive()) {
-				MyTreeNode root = ByteView.mainFrame.resourcePane.root.getChildByUserObject(
-						zipFile.substring(0, zipFile.length() - 1) + ".jar"
-				);
+				MyTreeNode root = ByteView.mainFrame.resourcePane.root.getChildByUserObject(zipFile.substring(0, zipFile.length() - 1) +
+						".jar");
 				MyTreeNode node = root.getChildByUserObject(this.fileContainer.getFileName());
 				node.setUserObject(fileName);
 				SwingUtilities.invokeLater(() -> ByteView.mainFrame.resourcePane.tree.updateUI());
@@ -218,7 +218,7 @@ public class VineFlowerDecompiler extends Decompiler implements IResultSaver, Au
 		}
 	}
 
-	private String readTokens(String content, ClassFileContainer container) {
+	private @NotNull String readTokens(@NotNull String content, ClassFileContainer container) {
 		int index = content.indexOf("Tokens:") - 3;
 		String tokenString = content.substring(index);
 		tokenString = tokenString.replace("/*\nTokens:", "").replace("*/", "").trim();
@@ -236,7 +236,7 @@ public class VineFlowerDecompiler extends Decompiler implements IResultSaver, Au
 		String methodString = s;
 		s = replaceUnnecessary(s);
 		String[] strings = s.split(" ");
-		if (strings[2].equalsIgnoreCase("field")) {
+		/*if (strings[2].equalsIgnoreCase("field")) {
 			handleField(strings, container);
 		}
 
@@ -257,11 +257,11 @@ public class VineFlowerDecompiler extends Decompiler implements IResultSaver, Au
 			if (!strings[2].equalsIgnoreCase("parameter")) {
 				if (!strings[2].equalsIgnoreCase("local")) {
 					if (!strings[2].equalsIgnoreCase("method")) {
-//						System.err.println(Arrays.toString(strings));
+						System.err.println(Arrays.toString(strings));
 					}
 				}
 			}
-		}
+		}*/
 	}
 
 	/**
@@ -368,6 +368,7 @@ public class VineFlowerDecompiler extends Decompiler implements IResultSaver, Au
 		fileContainer.methodMembers.computeIfAbsent(key, _ -> new ArrayList<>()).add(value);
 	}
 
+	@SuppressWarnings("ResultOfMethodCallIgnored")
 	private void deleteDirectory(@NotNull File root) {
 		File[] files = root.listFiles();
 		if (files != null) {
@@ -393,6 +394,11 @@ public class VineFlowerDecompiler extends Decompiler implements IResultSaver, Au
 		}
 	}
 
+	/**
+	 * Save files into this path. TODO: When I implement saving...
+	 *
+	 * @param path The path of the folder
+	 */
 	@Override
 	public void saveFolder(String path) {
 		System.err.println("Save folder: " + path);
@@ -431,16 +437,38 @@ public class VineFlowerDecompiler extends Decompiler implements IResultSaver, Au
 		}
 	}
 
+	/**
+	 * TODO: When implementing saving of the decompiled output.
+	 *
+	 * @param path        The path of the archive
+	 * @param archiveName The name of the saved archive
+	 * @param manifest    The manifest
+	 */
 	@Override
 	public void createArchive(String path, String archiveName, Manifest manifest) {
 		System.err.println("Create archive: " + path + " archiveName: " + archiveName + " manifest: " + manifest);
 	}
 
+	/**
+	 * TODO: When implementing saving of the decompiled output.
+	 *
+	 * @param path        The path of the archive
+	 * @param archiveName The name of the saved archive
+	 * @param entryName   The entry name (e.g 'META-INF' & 'META-INF/'
+	 */
 	@Override
 	public void saveDirEntry(String path, String archiveName, String entryName) {
 		System.err.println("Save dir entry: " + path + " archiveName: " + archiveName + " entryName: " + entryName);
 	}
 
+	/**
+	 * TODO: When implementing saving of the decompiled output.
+	 *
+	 * @param source      The source path of the archive file
+	 * @param path        The desired destination path
+	 * @param archiveName The archive name
+	 * @param entry       Any entries to copy
+	 */
 	@Override
 	public void copyEntry(String source, String path, String archiveName, String entry) {
 		System.err.println("Copy entry: " + source + " path: " + path + " archiveName: " + archiveName + " entryName: " + entry);
@@ -454,9 +482,8 @@ public class VineFlowerDecompiler extends Decompiler implements IResultSaver, Au
 	}
 
 	@Override
-	public void saveClassEntry(String path, String archiveName, String qualifiedName, String entryName, String content, int[] mapping) {
-//		System.err.println("Save class entry: " + path + " archiveName: " + archiveName + " qualifiedName: " + qualifiedName + " entryName"
-//				+ ": " + entryName + " content: " + content + " mapping: " + Arrays.toString(mapping));
+	public void saveClassEntry(String path, String archiveName, String qualifiedName, String entryName, @NotNull String content,
+							   int[] mapping) {
 		String start = "renamed from: ";
 		int startIndex = content.indexOf(start);
 		int endIndex = content.indexOf("\n", startIndex + 1);
@@ -467,10 +494,7 @@ public class VineFlowerDecompiler extends Decompiler implements IResultSaver, Au
 			if (clazz != null && !clazz.equals(this.fileContainer)) {
 				ZipFileContainer zipContainer = (ZipFileContainer) ByteView.mainFrame.resourcePane.uploadedFiles.get(archiveName);
 				zipContainer.fileEntries.values().remove(clazz);
-
-				MyTreeNode root = ByteView.mainFrame.resourcePane.root.getChildByUserObject(
-						archiveName
-				);
+				MyTreeNode root = ByteView.mainFrame.resourcePane.root.getChildByUserObject(archiveName);
 				MyTreeNode node = root.getChildByUserObject(decompiledName + ".class");
 				node.setUserObject(qualifiedName + ".class");
 				SwingUtilities.invokeLater(() -> ByteView.mainFrame.resourcePane.tree.updateUI());

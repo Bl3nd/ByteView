@@ -63,7 +63,7 @@ public class GeneralDecompilerPanel extends JPanel {
 		availableDecompilers.setSelectedItem(ByteView.configuration.getCurrentDecompiler());
 		availableDecompilers.addActionListener(GeneralDecompilerPanel::notifyUpdateDecompiler);
 
-		JLabel decompileAll = new JLabel("Decompile entire archive");
+		JLabel decompileAll = new JLabel("Decompile entire archive. Use this for better naming (VineFlower).");
 		JCheckBox checkBox = new JCheckBox();
 		checkBox.setSelected(Settings.changeDecompilerSetting);
 		checkBox.addActionListener(GeneralDecompilerPanel::decompileAllChanged);

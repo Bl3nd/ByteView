@@ -22,20 +22,14 @@
  * SOFTWARE.
  */
 
-package com.github.bl3nd.byteview.location;
+package com.github.bl3nd.byteview.tokens.location;
 
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
+import com.github.javaparser.ast.body.MethodDeclaration;
 
 /**
  * Created by Bl3nd.
- * Date: 6/15/2024
+ * Date: 8/24/2024
  */
-public record ClassParameterLocation(String owner, String method, String decRef, int line, int columnStart,
-									 int columnEnd) {
-	@Override
-	public @NotNull String toString() {
-		return "owner: " + owner + ", method: " + method + ", decRef: " + decRef + ", line: " + line + ", columnStart:" +
-				" " + columnStart + ", columnEnd: " + columnEnd;
-	}
+public record TestParameterLocation(MethodDeclaration parentMethod, boolean isDeclaration, int line, int columnStart, int columnEnd) {
+
 }
