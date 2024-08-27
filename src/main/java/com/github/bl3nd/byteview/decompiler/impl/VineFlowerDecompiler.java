@@ -236,7 +236,7 @@ public class VineFlowerDecompiler extends Decompiler implements IResultSaver, Au
 		String methodString = s;
 		s = replaceUnnecessary(s);
 		String[] strings = s.split(" ");
-		/*if (strings[2].equalsIgnoreCase("field")) {
+		if (strings[2].equalsIgnoreCase("field")) {
 			handleField(strings, container);
 		}
 
@@ -261,7 +261,7 @@ public class VineFlowerDecompiler extends Decompiler implements IResultSaver, Au
 					}
 				}
 			}
-		}*/
+		}
 	}
 
 	/**
