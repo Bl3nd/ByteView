@@ -100,13 +100,18 @@ public class GoToAction extends AbstractAction {
 		container.methodParameterMembers.values().forEach(parameters -> parameters.forEach(parameter -> {
 			if (parameter.line() == line && parameter.columnStart() - 1 <= column && parameter.columnEnd() >= column) {
 				Element root = textArea.getDocument().getDefaultRootElement();
-				ClassParameterLocation first = parameters.getFirst();
-				if (!Objects.equals(parameter.method(), first.method())) {
-					return;
+				if (parameter.decRef().equalsIgnoreCase("declaration")) {
+					int startOffset = root.getElement(parameter.line() - 1).getStartOffset() + (parameter.columnStart() - 1);
+					textArea.setCaretPosition(startOffset);
+				} else {
+					String method = parameter.method();
+					parameters.stream().filter(classParameterLocation -> classParameterLocation.method().equals(method)).forEach(classParameterLocation -> {
+						if (classParameterLocation.decRef().equalsIgnoreCase("declaration")) {
+							int startOffset = root.getElement(classParameterLocation.line() - 1).getStartOffset() + (classParameterLocation.columnStart() - 1);
+							textArea.setCaretPosition(startOffset);
+						}
+					});
 				}
-
-				int startOffset = root.getElement(first.line() - 1).getStartOffset() + (first.columnStart() - 1);
-				textArea.setCaretPosition(startOffset);
 			}
 		}));
 
@@ -114,13 +119,18 @@ public class GoToAction extends AbstractAction {
 		container.methodLocalMembers.values().forEach(localMembers -> localMembers.forEach(localMember -> {
 			if (localMember.line() == line && localMember.columnStart() - 1 <= column && localMember.columnEnd() >= column) {
 				Element root = textArea.getDocument().getDefaultRootElement();
-				ClassLocalVariableLocation first = localMembers.getFirst();
-				if (!Objects.equals(localMember.method(), first.method())) {
-					return;
+				if (localMember.decRef().equals("declaration")) {
+					int startOffset = root.getElement(localMember.line() - 1).getStartOffset() + (localMember.columnStart() - 1);
+					textArea.setCaretPosition(startOffset);
+				} else {
+					String method = localMember.method();
+					localMembers.stream().filter(classLocalVariableLocation -> classLocalVariableLocation.method().equals(method)).forEach(classLocalVariableLocation -> {
+						if (classLocalVariableLocation.decRef().equalsIgnoreCase("declaration")) {
+							int startOffset = root.getElement(classLocalVariableLocation.line() - 1).getStartOffset() + (classLocalVariableLocation.columnStart() - 1);
+							textArea.setCaretPosition(startOffset);
+						}
+					});
 				}
-
-				int startOffset = root.getElement(first.line() - 1).getStartOffset() + (first.columnStart() - 1);
-				textArea.setCaretPosition(startOffset);
 			}
 		}));
 	}

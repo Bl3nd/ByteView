@@ -38,11 +38,13 @@ public class TokenUtil {
 		return lexeme.isEmpty()
 				|| lexeme.equals(".")
 				|| lexeme.equals("(")
+				|| lexeme.equals(")")
 				|| lexeme.equals("[")
 				|| lexeme.equals("~")
 				|| lexeme.equals("-")
 				|| lexeme.equals("+")
-				? textArea.modelToToken(textArea.getCaretPosition())
+				|| lexeme.equals(" ")
+				? textArea.modelToToken(textArea.getCaretPosition() + 1)
 				: token;
 	}
 }

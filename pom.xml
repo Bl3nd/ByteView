@@ -88,6 +88,11 @@
             <version>3.26.1</version>
         </dependency>
         <dependency>
+            <groupId>com.github.javaparser</groupId>
+            <artifactId>javaparser-symbol-solver-core</artifactId>
+            <version>3.26.1</version>
+        </dependency>
+        <dependency>
             <groupId>com.github.tonivade</groupId>
             <artifactId>minimal-json</artifactId>
             <version>0.11.0</version>

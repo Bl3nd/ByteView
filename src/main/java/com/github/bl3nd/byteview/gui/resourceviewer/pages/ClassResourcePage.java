@@ -141,7 +141,6 @@ public class ClassResourcePage extends Page {
 			return;
 		}
 
-
 		highlighterEx.clearMarkOccurrencesHighlights();
 
 		int line = textArea.getCaretLineNumber() + 1;

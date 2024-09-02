@@ -236,7 +236,7 @@ public class VineFlowerDecompiler extends Decompiler implements IResultSaver, Au
 		String methodString = s;
 		s = replaceUnnecessary(s);
 		String[] strings = s.split(" ");
-		if (strings[2].equalsIgnoreCase("field")) {
+		/*if (strings[2].equalsIgnoreCase("field")) {
 			handleField(strings, container);
 		}
 
@@ -261,7 +261,7 @@ public class VineFlowerDecompiler extends Decompiler implements IResultSaver, Au
 					}
 				}
 			}
-		}
+		}*/
 	}
 
 	/**
@@ -284,7 +284,7 @@ public class VineFlowerDecompiler extends Decompiler implements IResultSaver, Au
 		int[] position = getMemberPosition(tokenArray[0], tokenArray[1]);
 		String owner = tokenArray[4].substring(0, tokenArray[4].indexOf("#"));
 		String fieldName = tokenArray[4].substring(tokenArray[4].indexOf("#") + 1, tokenArray[4].indexOf(":"));
-		putField(fieldName, new ClassFieldLocation(owner, tokenArray[3], position[0], position[1], position[2]), container);
+//		putField(fieldName, new ClassFieldLocation(owner, tokenArray[3], position[0], position[1], position[2]), container);
 	}
 
 	/**

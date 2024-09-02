@@ -24,22 +24,23 @@
 
 package com.github.bl3nd.byteview.files;
 
-import com.github.bl3nd.byteview.tokens.location.*;
 import com.github.bl3nd.byteview.misc.FileMisc;
 import com.github.bl3nd.byteview.misc.Icons;
-import com.github.javaparser.*;
+import com.github.bl3nd.byteview.tokens.MyVoidVisitor;
+import com.github.bl3nd.byteview.tokens.location.*;
+import com.github.javaparser.ParseProblemException;
+import com.github.javaparser.Range;
+import com.github.javaparser.StaticJavaParser;
+import com.github.javaparser.TokenRange;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.body.*;
-import com.github.javaparser.ast.expr.Expression;
-import com.github.javaparser.ast.expr.UnaryExpr;
-import com.github.javaparser.ast.expr.VariableDeclarationExpr;
-import com.github.javaparser.ast.stmt.BlockStmt;
-import com.github.javaparser.ast.stmt.ExpressionStmt;
 import com.github.javaparser.ast.stmt.Statement;
-import com.github.javaparser.ast.stmt.TryStmt;
 import com.github.javaparser.ast.type.Type;
+import com.github.javaparser.printer.YamlPrinter;
+import com.github.javaparser.symbolsolver.JavaSymbolSolver;
+import com.github.javaparser.symbolsolver.resolution.typesolvers.ReflectionTypeSolver;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -73,13 +74,17 @@ public class ClassFileContainer extends FileContainer {
 	 */
 	public void parse() {
 		// TODO: Sometimes this doesn't work
-		JavaParser parser = new JavaParser();
-		ParseResult<CompilationUnit> result = parser.parse(content);
-		CompilationUnit cu = result.getResult().orElse(null);
-		if (!result.isSuccessful()) {
-			result.getProblems().forEach(problem -> System.err.println(problem.getCause().orElse(null)));
-		}
-		if (cu != null) {
+		try {
+			StaticJavaParser.getParserConfiguration().setSymbolResolver(new JavaSymbolSolver(new ReflectionTypeSolver()));
+			CompilationUnit cu = StaticJavaParser.parse(content);
+			cu.accept(new MyVoidVisitor(this, cu), null);
+			YamlPrinter printer = new YamlPrinter(true);
+			/*try (FileWriter fileWriter = new FileWriter("Output.yml")) {
+				fileWriter.write(printer.output(cu));
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}*/
+
 			NodeList<TypeDeclaration<?>> types = cu.getTypes();
 			types.stream().map(TypeDeclaration::getMembers).forEach(members -> members.forEach(member -> {
 				if (member instanceof MethodDeclaration method) {
@@ -112,6 +117,8 @@ public class ClassFileContainer extends FileContainer {
 					}
 				}
 			}));
+		} catch (ParseProblemException e) {
+			System.err.println("Parsing error!");
 		}
 	}
 
@@ -167,10 +174,10 @@ public class ClassFileContainer extends FileContainer {
 			int columnStart = tokenRange.map(range -> range.begin.column).orElse(-1);
 			int columnEnd = tokenRange.map(range -> range.end.column).orElse(-1);
 
-			putTestParameter(parameter.getNameAsString(), new TestParameterLocation(method, true,
+			/*putTestParameter(parameter.getNameAsString(), new TestParameterLocation(method, true,
 					line,
 					columnStart,
-					columnEnd));
+					columnEnd));*/
 		}
 
 		String parameterTypeString = parameterTypeList.toString().substring(1,
@@ -272,16 +279,32 @@ public class ClassFileContainer extends FileContainer {
 		return fieldMembers;
 	}
 
+	public void putField(String key, ClassFieldLocation value) {
+		this.fieldMembers.computeIfAbsent(key, _ -> new ArrayList<>()).add(value);
+	}
+
 	public List<ClassFieldLocation> getMemberLocationsFor(String key) {
 		return fieldMembers.getOrDefault(key, new ArrayList<>());
+	}
+
+	public void putParameter(String key, ClassParameterLocation value) {
+		this.methodParameterMembers.computeIfAbsent(key, _ -> new ArrayList<>()).add(value);
 	}
 
 	public List<ClassParameterLocation> getParameterLocationsFor(String key) {
 		return methodParameterMembers.getOrDefault(key, new ArrayList<>());
 	}
 
+	public void putLocalVariable(String key, ClassLocalVariableLocation value) {
+		this.methodLocalMembers.computeIfAbsent(key, _ -> new ArrayList<>()).add(value);
+	}
+
 	public List<ClassLocalVariableLocation> getLocalLocationsFor(String key) {
 		return methodLocalMembers.getOrDefault(key, new ArrayList<>());
+	}
+
+	public void putMethod(String key, ClassMethodLocation value) {
+		this.methodMembers.computeIfAbsent(key, _ -> new ArrayList<>()).add(value);
 	}
 
 	public List<ClassMethodLocation> getMethodLocationsFor(String key) {
